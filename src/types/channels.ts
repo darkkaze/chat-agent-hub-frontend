@@ -40,6 +40,7 @@ export interface ChannelResponse extends BaseEntity {
 
 // Chat Types
 export interface ChatResponse extends BaseEntity {
+  name: string
   customer_name?: string
   customer_phone?: string
   assigned_user_id?: string
@@ -48,6 +49,7 @@ export interface ChatResponse extends BaseEntity {
   last_message_at?: string
   unread_count: number
   is_assigned: boolean
+  extra_data: Record<string, any>
 }
 
 export interface ChatListResponse extends PaginatedResponse<ChatResponse> {}
