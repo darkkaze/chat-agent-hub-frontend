@@ -25,7 +25,20 @@ Emits: @message-sent, @details-toggle
 </template>
 
 <script setup lang="ts">
-// TODO: Implementar lógica de conversación
+import { onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+
+const route = useRoute()
+const authStore = useAuthStore()
+
+// Guardar el canal visitado cuando se monta el componente
+onMounted(() => {
+  const channelId = route.params.channelId as string
+  if (channelId) {
+    authStore.setLastVisitedChannel(channelId)
+  }
+})
 </script>
 
 <style scoped>

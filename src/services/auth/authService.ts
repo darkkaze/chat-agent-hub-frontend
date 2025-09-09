@@ -23,19 +23,36 @@ import { apiService, buildQueryParams } from '@/services/api'
 import type {
   LoginRequest,
   LoginResponse,
+  SignupRequest,
+  SignupResponse,
   CreateUserRequest,
   UpdateUserRequest,
   UserResponse,
   CreateAgentRequest,
   UpdateAgentRequest,
-  AgentResponse
+  AgentResponse,
+  HasUsersResponse
 } from '@/types/auth'
 import type { MessageResponse } from '@/types/api'
 
 export class AuthService {
+  // System check
+  async hasUsers(): Promise<HasUsersResponse> {
+    return apiService.get<HasUsersResponse>('/auth/has-users')
+  }
+
   // Authentication
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     const response = await apiService.post<LoginResponse>('/auth/token', credentials)
+    
+    // Guardar token automáticamente
+    apiService.setToken(response.access_token)
+    
+    return response
+  }
+
+  async signup(userData: SignupRequest): Promise<SignupResponse> {
+    const response = await apiService.post<SignupResponse>('/auth/signup', userData)
     
     // Guardar token automáticamente
     apiService.setToken(response.access_token)

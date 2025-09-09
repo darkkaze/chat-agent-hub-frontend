@@ -8,8 +8,15 @@
  * - Error handling centralizado
  */
 
-import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from 'axios'
+import axios, { 
+  type AxiosInstance, 
+  type AxiosRequestConfig, 
+  type AxiosResponse, 
+  type InternalAxiosRequestConfig,
+  type AxiosError
+} from 'axios'
 import type { ApiError } from '@/types/api'
+import { config } from '@/config'
 
 class ApiService {
   private client: AxiosInstance
@@ -17,7 +24,7 @@ class ApiService {
 
   constructor() {
     this.client = axios.create({
-      baseURL: import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000',
+      baseURL: config.apiBaseUrl,
       timeout: 10000,
       headers: {
         'Content-Type': 'application/json'
@@ -30,13 +37,13 @@ class ApiService {
   private setupInterceptors() {
     // Request interceptor para agregar token
     this.client.interceptors.request.use(
-      (config) => {
+      (config: InternalAxiosRequestConfig) => {
         if (this.token) {
           config.headers.authorization = `Bearer ${this.token}`
         }
         return config
       },
-      (error) => {
+      (error: AxiosError) => {
         return Promise.reject(error)
       }
     )
@@ -46,10 +53,11 @@ class ApiService {
       (response: AxiosResponse) => {
         return response
       },
-      (error) => {
+      (error: AxiosError) => {
+        const responseData = error.response?.data as { detail?: string; type?: string } | undefined
         const apiError: ApiError = {
-          detail: error.response?.data?.detail || error.message || 'Unknown error',
-          type: error.response?.data?.type
+          detail: responseData?.detail || error.message || 'Unknown error',
+          type: responseData?.type
         }
 
         // Si es 401, limpiar token
@@ -85,12 +93,12 @@ class ApiService {
     return response.data
   }
 
-  async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  async post<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.client.post<T>(url, data, config)
     return response.data
   }
 
-  async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  async put<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
     const response = await this.client.put<T>(url, data, config)
     return response.data
   }
@@ -105,7 +113,7 @@ class ApiService {
 export const apiService = new ApiService()
 
 // Helper para construir query params
-export const buildQueryParams = (params: Record<string, any>): string => {
+export const buildQueryParams = (params: Record<string, unknown>): string => {
   const filtered = Object.entries(params).filter(([_, value]) => 
     value !== undefined && value !== null && value !== ''
   )

@@ -7,15 +7,18 @@
  * 
  * Endpoints mapeados:
  * - GET /channels
+ * - GET /channels/platforms
  * - POST /channels
  * - GET /channels/{channel_id}
+ * - PUT /channels/{channel_id}
  * - DELETE /channels/{channel_id}
  */
 
 import { apiService } from '@/services/api'
 import type {
   ChannelResponse,
-  CreateChannelRequest
+  CreateChannelRequest,
+  UpdateChannelRequest
 } from '@/types/channels'
 import type { MessageResponse } from '@/types/api'
 
@@ -24,12 +27,20 @@ export class ChannelsService {
     return apiService.get<ChannelResponse[]>('/channels')
   }
 
+  async getPlatforms(): Promise<string[]> {
+    return apiService.get<string[]>('/channels/platforms')
+  }
+
   async createChannel(channelData: CreateChannelRequest): Promise<ChannelResponse> {
     return apiService.post<ChannelResponse>('/channels', channelData)
   }
 
   async getChannel(channelId: string): Promise<ChannelResponse> {
     return apiService.get<ChannelResponse>(`/channels/${channelId}`)
+  }
+
+  async updateChannel(channelId: string, channelData: UpdateChannelRequest): Promise<ChannelResponse> {
+    return apiService.put<ChannelResponse>(`/channels/${channelId}`, channelData)
   }
 
   async deleteChannel(channelId: string): Promise<MessageResponse> {

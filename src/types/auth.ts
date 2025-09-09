@@ -21,6 +21,21 @@ export interface LoginResponse {
   user: UserResponse
 }
 
+// Signup Types
+export interface SignupRequest {
+  username: string
+  password: string
+  email?: string
+}
+
+export interface SignupResponse {
+  access_token: string
+  refresh_token: string
+  token_type: string
+  expires_at: string
+  user: UserResponse
+}
+
 // User Types
 export interface CreateUserRequest {
   username: string
@@ -78,4 +93,9 @@ export enum UserRole {
   ADMIN = 'admin',
   USER = 'user',
   AGENT = 'agent'
+}
+
+// Has Users Response
+export interface HasUsersResponse {
+  has_users: boolean
 }

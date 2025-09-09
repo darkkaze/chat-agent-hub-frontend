@@ -27,10 +27,9 @@ export interface MessageResponse {
 // Enums globales
 export enum PlatformType {
   WHATSAPP = 'WHATSAPP',
-  TELEGRAM = 'TELEGRAM', 
-  INSTAGRAM = 'INSTAGRAM',
-  FACEBOOK = 'FACEBOOK',
-  TWITTER = 'TWITTER'
+  WHATSAPP_TWILIO = 'WHATSAPP_TWILIO',
+  TELEGRAM = 'TELEGRAM',
+  INSTAGRAM = 'INSTAGRAM'
 }
 
 export enum MessageType {

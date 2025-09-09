@@ -14,12 +14,28 @@ import type { BaseEntity, PaginatedResponse, PlatformType, MessageType, MessageS
 export interface CreateChannelRequest {
   name: string
   platform: PlatformType
-  credentials: Record<string, any> // Depende de la plataforma
+  credentials_to_send_message?: Record<string, any> // Depende de la plataforma
+  api_to_send_message?: string
+  buffer_time_seconds?: number
+  history_msg_count?: number
+  recent_msg_window_minutes?: number
+}
+
+export interface UpdateChannelRequest {
+  name?: string
+  api_to_send_message?: string
+  buffer_time_seconds?: number
+  history_msg_count?: number
+  recent_msg_window_minutes?: number
 }
 
 export interface ChannelResponse extends BaseEntity {
   name: string
   platform: PlatformType
+  api_to_send_message?: string
+  buffer_time_seconds: number
+  history_msg_count: number
+  recent_msg_window_minutes: number
 }
 
 // Chat Types
