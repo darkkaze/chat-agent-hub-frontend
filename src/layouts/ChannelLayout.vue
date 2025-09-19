@@ -22,42 +22,40 @@ Emits: ninguno
     <SidebarNavigation />
 
     <!-- Main Content Area -->
-    <v-main>
-      <v-container fluid class="pa-0 h-100">
-        <div class="channel-layout d-flex">
-          <!-- Chat List Column -->
-          <div class="chat-list-column">
-            <ChannelView :key="route.params.channelId" />
-          </div>
-          
-          <!-- Chat Content Column -->
-          <div class="chat-content-column">
-            <div v-if="!route.params.chatId" class="empty-chat-area">
-              <div class="d-flex flex-column align-center justify-center h-100 pa-8">
-                <v-icon size="120" color="on-surface-variant" class="mb-6">
-                  mdi-chat-outline
-                </v-icon>
-                <h2 class="text-h5 text-on-surface-variant text-center mb-4">
-                  ¡Bienvenido a Agent Hub!
-                </h2>
-                <p class="text-body-1 text-on-surface-variant text-center mb-6" style="max-width: 400px;">
-                  Selecciona una conversación de la lista para comenzar a chatear con tus clientes,
-                  o espera a que lleguen nuevos mensajes.
-                </p>
-                <v-btn 
-                  color="primary" 
-                  variant="tonal"
-                  prepend-icon="mdi-refresh"
-                  @click="refreshChats"
-                >
-                  Actualizar conversaciones
-                </v-btn>
-              </div>
-            </div>
-            <router-view v-else />
-          </div>
+    <v-main class="main-content">
+      <div class="channel-layout">
+        <!-- Chat List Column -->
+        <div class="chat-list-column">
+          <ChannelView :key="route.params.channelId as string" />
         </div>
-      </v-container>
+
+        <!-- Chat Content Column -->
+        <div class="chat-content-column">
+          <div v-if="!route.params.chatId" class="empty-chat-area">
+            <div class="d-flex flex-column align-center justify-center h-100 pa-8">
+              <v-icon size="120" color="on-surface-variant" class="mb-6">
+                mdi-chat-outline
+              </v-icon>
+              <h2 class="text-h5 text-on-surface-variant text-center mb-4">
+                ¡Bienvenido a Agent Hub!
+              </h2>
+              <p class="text-body-1 text-on-surface-variant text-center mb-6" style="max-width: 400px;">
+                Selecciona una conversación de la lista para comenzar a chatear con tus clientes,
+                o espera a que lleguen nuevos mensajes.
+              </p>
+              <v-btn
+                color="primary"
+                variant="tonal"
+                prepend-icon="mdi-refresh"
+                @click="refreshChats"
+              >
+                Actualizar conversaciones
+              </v-btn>
+            </div>
+          </div>
+          <router-view v-else />
+        </div>
+      </div>
     </v-main>
   </v-app>
 </template>
@@ -77,61 +75,86 @@ const refreshChats = () => {
 </script>
 
 <style scoped>
-.channel-layout {
-  height: 100%;
-  min-height: 100vh;
+/* Main content container - fill viewport height */
+.main-content {
+  height: 100vh;
+  overflow: hidden;
 }
 
+/* Channel layout - fixed grid system */
+.channel-layout {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Chat list column - independent overflow */
 .chat-list-column {
-  width: 400px;
-  min-width: 320px;
-  max-width: 500px;
   border-right: 1px solid rgba(var(--v-theme-on-surface), 0.12);
   background: rgb(var(--v-theme-surface));
-  flex-shrink: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
+/* Chat content column - independent overflow */
 .chat-content-column {
-  flex: 1;
   background: rgb(var(--v-theme-background));
-  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
+/* Empty chat area */
 .empty-chat-area {
   height: 100%;
   background: rgb(var(--v-theme-background));
-  background-image: 
+  background-image:
     radial-gradient(circle at 20px 20px, rgba(var(--v-theme-on-surface), 0.05) 1px, transparent 1px),
     radial-gradient(circle at 60px 60px, rgba(var(--v-theme-on-surface), 0.05) 1px, transparent 1px);
   background-size: 80px 80px;
   background-position: 0 0, 40px 40px;
 }
 
-/* Adjust for app bar on mobile/tablet portrait (up to ~900px) */
+/* Mobile responsiveness */
 @media (max-width: 959px) {
   .channel-layout {
-    height: calc(100vh - 64px); /* Account for app bar height */
+    grid-template-columns: 1fr;
+    height: calc(100vh - 64px);
   }
-  
-  .chat-list-column {
-    width: 100%;
-    max-width: none;
-  }
-  
+
   .chat-content-column {
     display: none;
   }
 }
 
-/* Show chat content column only when chat is selected on mobile */
+/* Show chat content when chat is selected on mobile */
 @media (max-width: 959px) {
+  .channel-layout.has-selected-chat {
+    grid-template-columns: 1fr;
+  }
+
   .channel-layout.has-selected-chat .chat-list-column {
     display: none;
   }
-  
+
   .channel-layout.has-selected-chat .chat-content-column {
-    display: block;
-    width: 100%;
+    display: flex;
+  }
+}
+
+/* Tablet size adjustments */
+@media (min-width: 960px) and (max-width: 1264px) {
+  .channel-layout {
+    grid-template-columns: 350px 1fr;
+  }
+}
+
+/* Large screen adjustments */
+@media (min-width: 1920px) {
+  .channel-layout {
+    grid-template-columns: 450px 1fr;
   }
 }
 </style>

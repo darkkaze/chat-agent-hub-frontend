@@ -14,7 +14,7 @@ Emits: @message-sent, @details-toggle
 -->
 
 <template>
-  <div class="chat-view d-flex flex-column h-100" :class="{ 'panel-open': showDetailsPanel }">
+  <div class="chat-view" :class="{ 'panel-open': showDetailsPanel }">
     <!-- Chat Header -->
     <div class="chat-header px-4 py-3 border-b d-flex align-center justify-space-between">
       <div class="d-flex align-center">
@@ -434,12 +434,16 @@ onUnmounted(() => {
 .chat-view {
   height: 100vh;
   background: rgb(var(--v-theme-surface));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .chat-header {
   background: rgb(var(--v-theme-surface));
   border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.12);
   flex-shrink: 0;
+  z-index: 2;
 }
 
 .border-b {
@@ -451,8 +455,11 @@ onUnmounted(() => {
 }
 
 .messages-container {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
   background: rgb(var(--v-theme-background));
-  background-image: 
+  background-image:
     radial-gradient(circle at 20px 20px, rgba(var(--v-theme-on-surface), 0.05) 1px, transparent 1px),
     radial-gradient(circle at 60px 60px, rgba(var(--v-theme-on-surface), 0.05) 1px, transparent 1px);
   background-size: 80px 80px;
@@ -474,6 +481,25 @@ onUnmounted(() => {
 .message-input-container {
   background: rgb(var(--v-theme-surface));
   flex-shrink: 0;
+  z-index: 2;
+}
+
+/* Custom scrollbar for messages */
+.messages-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.messages-container::-webkit-scrollbar-track {
+  background: rgba(var(--v-theme-on-surface), 0.05);
+}
+
+.messages-container::-webkit-scrollbar-thumb {
+  background: rgba(var(--v-theme-on-surface), 0.2);
+  border-radius: 3px;
+}
+
+.messages-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--v-theme-on-surface), 0.3);
 }
 
 .typing-indicator {

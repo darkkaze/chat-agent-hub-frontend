@@ -261,16 +261,23 @@ onUnmounted(() => {
 
 <style scoped>
 .channel-view {
-  height: 100%;
+  height: 100vh;
   background: rgb(var(--v-theme-surface));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .border-b {
   border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  flex-shrink: 0;
 }
 
 .chat-list {
   background: rgb(var(--v-theme-surface));
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .empty-state {
@@ -279,5 +286,23 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+/* Custom scrollbar for chat list */
+.chat-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-list::-webkit-scrollbar-track {
+  background: rgba(var(--v-theme-on-surface), 0.05);
+}
+
+.chat-list::-webkit-scrollbar-thumb {
+  background: rgba(var(--v-theme-on-surface), 0.2);
+  border-radius: 3px;
+}
+
+.chat-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--v-theme-on-surface), 0.3);
 }
 </style>
