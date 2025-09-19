@@ -62,22 +62,33 @@ export interface UserResponse extends BaseEntity {
 // Agent Types
 export interface CreateAgentRequest {
   name: string
-  callback_url: string
+  webhook_url?: string
   is_fire_and_forget: boolean
-  channel_id: string
+  buffer_time_seconds: number
+  history_msg_count: number
+  recent_msg_window_minutes: number
+  activate_for_new_conversation: boolean
 }
 
 export interface UpdateAgentRequest {
   name?: string
-  callback_url?: string
+  webhook_url?: string
   is_fire_and_forget?: boolean
+  buffer_time_seconds?: number
+  history_msg_count?: number
+  recent_msg_window_minutes?: number
+  activate_for_new_conversation?: boolean
   is_active?: boolean
 }
 
 export interface AgentResponse extends BaseEntity {
   name: string
-  callback_url: string
+  webhook_url?: string
   is_fire_and_forget: boolean
+  buffer_time_seconds: number
+  history_msg_count: number
+  recent_msg_window_minutes: number
+  activate_for_new_conversation: boolean
   is_active: boolean
 }
 

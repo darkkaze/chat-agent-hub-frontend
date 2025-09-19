@@ -137,15 +137,14 @@ Vista para crear el primer agente durante el onboarding
               hint="Un nombre descriptivo para identificar este agente"
             />
 
-            <!-- Callback URL -->
+            <!-- Webhook URL -->
             <v-text-field
-              v-model="agentData.callback_url"
+              v-model="agentData.webhook_url"
               label="URL de tu agente (endpoint)"
               variant="outlined"
               prepend-inner-icon="mdi-api"
-              :rules="callbackRules"
+              :rules="webhookRules"
               class="mb-4"
-              required
               placeholder="https://tu-servidor.com/webhook"
               hint="La URL donde recibirás los mensajes para procesar"
             />
@@ -167,17 +166,71 @@ Vista para crear el primer agente durante el onboarding
               </template>
             </v-checkbox>
 
-            <!-- Channel Association -->
-            <v-alert
-              type="info"
-              variant="tonal"
+            <!-- Agent Configuration -->
+            <v-card
+              variant="outlined"
               class="mb-4"
             >
-              <div class="text-body-2">
-                <strong>Canal asociado:</strong> Este agente se asociará automáticamente 
-                al canal que acabas de crear para procesar sus mensajes.
-              </div>
-            </v-alert>
+              <v-card-title class="text-body-1 py-3">
+                <v-icon start>mdi-cog</v-icon>
+                Configuración del agente
+              </v-card-title>
+              <v-card-text>
+                <v-text-field
+                  v-model.number="agentData.buffer_time_seconds"
+                  label="Buffer de tiempo (seg)"
+                  type="number"
+                  variant="outlined"
+                  min="1"
+                  max="30"
+                  :rules="bufferTimeRules"
+                  hint="Tiempo para agrupar mensajes consecutivos"
+                  persistent-hint
+                  class="mb-4"
+                />
+                
+                <v-text-field
+                  v-model.number="agentData.history_msg_count"
+                  label="Mensajes de historial"
+                  type="number"
+                  variant="outlined"
+                  min="1"
+                  max="100"
+                  :rules="historyCountRules"
+                  hint="Cantidad de mensajes previos a enviar al agente"
+                  persistent-hint
+                  class="mb-4"
+                />
+                
+                <v-text-field
+                  v-model.number="agentData.recent_msg_window_minutes"
+                  label="Ventana reciente (min)"
+                  type="number"
+                  variant="outlined"
+                  min="60"
+                  max="10080"
+                  :rules="recentWindowRules"
+                  hint="Tiempo para considerar mensajes como 'recientes'"
+                  persistent-hint
+                  class="mb-4"
+                />
+                
+                <v-checkbox
+                  v-model="agentData.activate_for_new_conversation"
+                  label="Activar para nuevas conversaciones"
+                  color="primary"
+                  hint="El agente se activará automáticamente para conversaciones nuevas"
+                  persistent-hint
+                >
+                  <template #append>
+                    <v-tooltip activator="parent" location="top">
+                      <span>Cuando llega un mensaje de un contacto nuevo, el agente se activa automáticamente.</span>
+                    </v-tooltip>
+                  </template>
+                </v-checkbox>
+              </v-card-text>
+            </v-card>
+
 
             <!-- Error message -->
             <v-alert
@@ -241,9 +294,12 @@ const channelId = ref('')
 // Form data
 const agentData = reactive<CreateAgentRequest>({
   name: '',
-  callback_url: '',
+  webhook_url: '',
   is_fire_and_forget: false,
-  channel_id: ''
+  buffer_time_seconds: 3,
+  history_msg_count: 40,
+  recent_msg_window_minutes: 1440, // 60*24 = 1 día
+  activate_for_new_conversation: true
 })
 
 // Validation rules
@@ -252,9 +308,9 @@ const nameRules = [
   (v: string) => v.length >= 3 || 'El nombre debe tener al menos 3 caracteres'
 ]
 
-const callbackRules = [
-  (v: string) => !!v || 'La URL del agente es requerida',
+const webhookRules = [
   (v: string) => {
+    if (!v) return true // Optional field
     try {
       new URL(v)
       return true
@@ -262,6 +318,22 @@ const callbackRules = [
       return 'Debe ser una URL válida (ej: https://ejemplo.com/webhook)'
     }
   }
+]
+
+// Validation rules for agent configuration
+const bufferTimeRules = [
+  (v: number) => v >= 1 || 'Debe ser al menos 1 segundo',
+  (v: number) => v <= 30 || 'Máximo 30 segundos'
+]
+
+const historyCountRules = [
+  (v: number) => v >= 1 || 'Debe ser al menos 1 mensaje',
+  (v: number) => v <= 100 || 'Máximo 100 mensajes'
+]
+
+const recentWindowRules = [
+  (v: number) => v >= 60 || 'Debe ser al menos 60 minutos (1 hora)',
+  (v: number) => v <= 10080 || 'Máximo 10080 minutos (7 días)'
 ]
 
 // Handle agent creation
@@ -272,9 +344,6 @@ const handleCreateAgent = async () => {
   error.value = ''
 
   try {
-    // Set channel ID
-    agentData.channel_id = channelId.value
-
     const agent = await authService.createAgent(agentData)
     
     // Guardar el canal como último visitado

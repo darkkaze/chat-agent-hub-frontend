@@ -15,9 +15,9 @@ Emits: ninguno por ahora
 -->
 
 <template>
-  <!-- Mobile App Bar -->
+  <!-- Mobile & Tablet Portrait App Bar -->
   <v-app-bar 
-    v-if="$vuetify.display.mobile" 
+    v-if="isMobileOrTabletPortrait" 
     color="surface" 
     elevation="1"
     density="default"
@@ -34,18 +34,18 @@ Emits: ninguno por ahora
 
   <!-- Navigation Drawer -->
   <v-navigation-drawer
-    :model-value="$vuetify.display.mobile ? mobileDrawer : drawer"
+    :model-value="isMobileOrTabletPortrait ? mobileDrawer : drawer"
     @update:model-value="updateDrawerState"
-    :rail="isCompact && !$vuetify.display.mobile"
-    :temporary="$vuetify.display.mobile"
-    :width="$vuetify.display.mobile ? mobileDrawerWidth : drawerWidth"
+    :rail="isCompact && !isMobileOrTabletPortrait"
+    :permanent="!isMobileOrTabletPortrait"
+    :width="isMobileOrTabletPortrait ? mobileDrawerWidth : drawerWidth"
     color="surface"
     elevation="1"
     class="border-e-sm"
   >
     <div class="d-flex flex-column h-100">
       <!-- Desktop Header -->
-      <div v-if="!$vuetify.display.mobile" class="px-4 py-3">
+      <div v-if="!isMobileOrTabletPortrait" class="px-4 py-3">
         <v-list-item 
           :class="isCompact ? 'justify-center' : ''"
           density="compact"
@@ -63,7 +63,7 @@ Emits: ninguno por ahora
         </v-list-item>
       </div>
 
-      <!-- Mobile Header -->
+      <!-- Mobile/Tablet Portrait Header -->
       <div v-else class="px-4 py-3">
         <v-list-item>
           <v-list-item-title class="text-h6 text-on-surface font-weight-bold">
@@ -80,10 +80,10 @@ Emits: ninguno por ahora
           v-for="(channel, index) in channels" 
           :key="index"
           class="mb-2 d-flex"
-          :class="isCompact && !$vuetify.display.mobile ? 'justify-center' : ''"
+          :class="isCompact && !isMobileOrTabletPortrait ? 'justify-center' : ''"
         >
           <v-tooltip 
-            v-if="isCompact && !$vuetify.display.mobile"
+            v-if="isCompact && !isMobileOrTabletPortrait"
             location="end"
             :text="channel.name"
           >
@@ -128,10 +128,10 @@ Emits: ninguno por ahora
           v-for="(action, index) in secondaryActions" 
           :key="index"
           class="mb-2 d-flex"
-          :class="isCompact && !$vuetify.display.mobile ? 'justify-center' : ''"
+          :class="isCompact && !isMobileOrTabletPortrait ? 'justify-center' : ''"
         >
           <v-tooltip 
-            v-if="isCompact && !$vuetify.display.mobile"
+            v-if="isCompact && !isMobileOrTabletPortrait"
             location="end"
             :text="action.name"
           >
@@ -172,10 +172,10 @@ Emits: ninguno por ahora
         <!-- Settings Button -->
         <div 
           class="d-flex mb-2"
-          :class="isCompact && !$vuetify.display.mobile ? 'justify-center' : ''"
+          :class="isCompact && !isMobileOrTabletPortrait ? 'justify-center' : ''"
         >
           <v-tooltip 
-            v-if="isCompact && !$vuetify.display.mobile"
+            v-if="isCompact && !isMobileOrTabletPortrait"
             location="end"
             text="Configuración"
           >
@@ -207,7 +207,7 @@ Emits: ninguno por ahora
 
         <!-- Desktop Expand/Collapse Button -->
         <div 
-          v-if="!$vuetify.display.mobile"
+          v-if="!isMobileOrTabletPortrait"
           class="d-flex"
           :class="isCompact ? 'justify-center' : ''"
         >
@@ -245,9 +245,9 @@ Emits: ninguno por ahora
     </div>
   </v-navigation-drawer>
 
-  <!-- Mobile Overlay -->
+  <!-- Mobile/Tablet Portrait Overlay -->
   <v-overlay 
-    v-if="$vuetify.display.mobile && mobileDrawer"
+    v-if="isMobileOrTabletPortrait && mobileDrawer"
     :model-value="mobileDrawer"
     scrim="rgba(0,0,0,0.3)"
     @click:outside="mobileDrawer = false"
@@ -255,7 +255,7 @@ Emits: ninguno por ahora
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useDisplay } from 'vuetify'
 import { useRouter } from 'vue-router'
 
@@ -274,8 +274,15 @@ interface Action {
 }
 
 // Composables
-const { mobile } = useDisplay()
 const router = useRouter()
+
+// Reactive screen width
+const screenWidth = ref(window.innerWidth)
+
+// Computed - Show app bar on screens smaller than 960px
+const isMobileOrTabletPortrait = computed(() => {
+  return screenWidth.value < 960
+})
 
 // Reactive state
 const drawer = ref(true)
@@ -308,8 +315,8 @@ const selectChannel = (channel: Channel) => {
   // Set selected channel as active
   channel.active = true
   
-  // Close mobile drawer when channel is selected
-  if (mobile.value) {
+  // Close drawer when channel is selected on mobile/tablet portrait
+  if (isMobileOrTabletPortrait.value) {
     mobileDrawer.value = false
   }
   
@@ -318,19 +325,15 @@ const selectChannel = (channel: Channel) => {
 }
 
 const handleAction = (action: Action) => {
-  console.log('Action clicked:', action.name)
-  
-  // Close mobile drawer when action is selected
-  if (mobile.value) {
+  // Close drawer when action is selected on mobile/tablet portrait
+  if (isMobileOrTabletPortrait.value) {
     mobileDrawer.value = false
   }
 }
 
 const openSettings = () => {
-  console.log('Settings clicked')
-  
-  // Close mobile drawer when settings is selected
-  if (mobile.value) {
+  // Close drawer when settings is selected on mobile/tablet portrait
+  if (isMobileOrTabletPortrait.value) {
     mobileDrawer.value = false
   }
 }
@@ -341,21 +344,45 @@ const toggleCompact = () => {
 
 // Methods for drawer state
 const updateDrawerState = (value: boolean) => {
-  if (mobile.value) {
+  if (isMobileOrTabletPortrait.value) {
     mobileDrawer.value = value
   } else {
     drawer.value = value
   }
 }
 
+// Handle window resize
+const handleResize = () => {
+  screenWidth.value = window.innerWidth
+}
+
+// Watch for breakpoint changes and update drawer state
+watch(isMobileOrTabletPortrait, (newIsMobile) => {
+  if (newIsMobile) {
+    // Switching to mobile/tablet portrait - close drawer by default
+    mobileDrawer.value = false
+  } else {
+    // Switching to desktop/tablet landscape - show drawer
+    drawer.value = true
+  }
+})
+
 // Lifecycle
 onMounted(() => {
+  // Add resize listener
+  window.addEventListener('resize', handleResize)
+  
   // Set initial drawer state based on screen size
-  drawer.value = !mobile.value
-  // Desktop starts in compact mode
-  if (!mobile.value) {
+  drawer.value = !isMobileOrTabletPortrait.value
+  // Desktop and tablet landscape start in compact mode
+  if (!isMobileOrTabletPortrait.value) {
     isCompact.value = true
   }
+})
+
+onUnmounted(() => {
+  // Clean up resize listener
+  window.removeEventListener('resize', handleResize)
 })
 </script>
 

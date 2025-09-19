@@ -8,7 +8,7 @@
  * - Asignación de chats
  */
 
-import type { BaseEntity, PaginatedResponse, PlatformType, MessageType, MessageStatus } from './api'
+import type { BaseEntity, PaginatedResponse, PlatformType, MessageType, MessageStatus, SenderType, DeliveryStatus } from './api'
 
 // Channel Types
 export interface CreateChannelRequest {
@@ -16,43 +16,41 @@ export interface CreateChannelRequest {
   platform: PlatformType
   credentials_to_send_message?: Record<string, any> // Depende de la plataforma
   api_to_send_message?: string
-  buffer_time_seconds?: number
-  history_msg_count?: number
-  recent_msg_window_minutes?: number
 }
 
 export interface UpdateChannelRequest {
   name?: string
   api_to_send_message?: string
-  buffer_time_seconds?: number
-  history_msg_count?: number
-  recent_msg_window_minutes?: number
 }
 
 export interface ChannelResponse extends BaseEntity {
   name: string
   platform: PlatformType
   api_to_send_message?: string
-  buffer_time_seconds: number
-  history_msg_count: number
-  recent_msg_window_minutes: number
 }
 
 // Chat Types
 export interface ChatResponse extends BaseEntity {
   name: string
+  external_id: string
   customer_name?: string
   customer_phone?: string
   assigned_user_id?: string
   assigned_user_name?: string
   last_message?: string
   last_message_at?: string
+  last_message_ts?: string
+  last_sender_type?: SenderType
   unread_count: number
   is_assigned: boolean
   extra_data: Record<string, any>
 }
 
-export interface ChatListResponse extends PaginatedResponse<ChatResponse> {}
+export interface ChatListResponse {
+  chats: ChatResponse[]
+  total_count: number
+  has_more: boolean
+}
 
 export interface ChatFiltersParams {
   limit?: number
@@ -83,8 +81,8 @@ export interface MessageAttachment {
 }
 
 export interface SendMessageRequest {
-  text: string
-  attachments?: MessageAttachment[]
+  content: string
+  meta_data?: Record<string, any>
 }
 
 export interface MessageResponse extends BaseEntity {
@@ -94,10 +92,16 @@ export interface MessageResponse extends BaseEntity {
   message_type: MessageType
   timestamp: string
   status: MessageStatus
+  delivery_status: DeliveryStatus | null
   is_from_customer: boolean
+  sender_type?: SenderType
 }
 
-export interface ChatMessagesResponse extends PaginatedResponse<MessageResponse> {}
+export interface ChatMessagesResponse {
+  messages: MessageResponse[]
+  total_count: number
+  has_more: boolean
+}
 
 export interface MessagesFiltersParams {
   limit?: number

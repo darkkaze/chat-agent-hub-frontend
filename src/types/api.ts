@@ -45,7 +45,22 @@ export enum MessageStatus {
   SENT = 'sent',
   DELIVERED = 'delivered',
   READ = 'read',
-  FAILED = 'failed'
+  FAILED = 'failed',
+  PENDING = 'pending'
+}
+
+export enum SenderType {
+  CONTACT = 'CONTACT',
+  USER = 'USER',
+  AGENT = 'AGENT'
+}
+
+export enum DeliveryStatus {
+  PENDING = 'PENDING',
+  SENT = 'SENT',
+  DELIVERED = 'DELIVERED',
+  READ = 'READ',
+  FAILED = 'FAILED'
 }
 
 // Base request/response types

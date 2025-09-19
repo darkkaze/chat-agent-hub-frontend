@@ -83,55 +83,6 @@ Vista para crear el primer canal durante el onboarding
               hint="URL del API para enviar mensajes. Puedes usar variables como {token}, {phone}, {message}"
             />
 
-            <!-- Advanced Settings -->
-            <v-card
-              variant="outlined"
-              class="mb-4"
-            >
-              <v-card-title class="text-body-1 py-3">
-                <v-icon start>mdi-cog</v-icon>
-                Configuración avanzada
-              </v-card-title>
-              <v-card-text>
-                <v-text-field
-                  v-model.number="channelData.buffer_time_seconds"
-                  label="Buffer de tiempo (seg)"
-                  type="number"
-                  variant="outlined"
-                  min="1"
-                  max="30"
-                  :rules="bufferTimeRules"
-                  hint="Tiempo para agrupar mensajes consecutivos"
-                  persistent-hint
-                  class="mb-4"
-                />
-                
-                <v-text-field
-                  v-model.number="channelData.history_msg_count"
-                  label="Mensajes de historial"
-                  type="number"
-                  variant="outlined"
-                  min="1"
-                  max="100"
-                  :rules="historyCountRules"
-                  hint="Cantidad de mensajes previos a enviar al agente"
-                  persistent-hint
-                  class="mb-4"
-                />
-                
-                <v-text-field
-                  v-model.number="channelData.recent_msg_window_minutes"
-                  label="Ventana reciente (min)"
-                  type="number"
-                  variant="outlined"
-                  min="60"
-                  max="10080"
-                  :rules="recentWindowRules"
-                  hint="Tiempo para considerar mensajes como 'recientes'"
-                  persistent-hint
-                />
-              </v-card-text>
-            </v-card>
 
             <!-- Credentials (Optional) -->
             <v-card
@@ -140,11 +91,14 @@ Vista para crear el primer canal durante el onboarding
             >
               <v-card-title class="text-body-1 py-3">
                 <v-icon start>mdi-key</v-icon>
-                Credenciales (opcional)
+                {{ isTwilioPlatform ? 'Credenciales de Twilio (requeridas)' : 'Credenciales (opcional)' }}
               </v-card-title>
               <v-card-text>
                 <p class="text-body-2 text-on-surface-variant mb-4">
-                  Define credenciales para autenticación. Si tu API requiere un token, agrégalo aquí como "token".
+                  {{ isTwilioPlatform
+                    ? 'Configura las credenciales de tu cuenta de Twilio para WhatsApp Business API.'
+                    : 'Define credenciales para autenticación. Si tu API requiere un token, agrégalo aquí como "token".'
+                  }}
                 </p>
                 
                 <div v-for="(credential, index) in credentials" :key="index" class="mb-3">
@@ -155,7 +109,8 @@ Vista para crear el primer canal durante el onboarding
                         label="Clave"
                         variant="outlined"
                         density="compact"
-                        placeholder="token"
+                        :readonly="isTwilioPlatform"
+                        :placeholder="isTwilioPlatform ? '' : 'token'"
                       />
                     </v-col>
                     <v-col cols="6">
@@ -165,7 +120,7 @@ Vista para crear el primer canal durante el onboarding
                         variant="outlined"
                         density="compact"
                         :type="credential.key === 'token' ? 'password' : 'text'"
-                        placeholder="tu_token_aqui"
+                        :placeholder="getTwilioPlaceholder(credential.key)"
                       />
                     </v-col>
                     <v-col cols="1" class="d-flex align-center">
@@ -174,6 +129,7 @@ Vista para crear el primer canal durante el onboarding
                         size="small"
                         variant="text"
                         color="error"
+                        :disabled="isTwilioPlatform"
                         @click="removeCredential(index)"
                       />
                     </v-col>
@@ -181,6 +137,7 @@ Vista para crear el primer canal durante el onboarding
                 </div>
 
                 <v-btn
+                  v-if="!isTwilioPlatform"
                   variant="outlined"
                   prepend-icon="mdi-plus"
                   @click="addCredential"
@@ -201,11 +158,7 @@ Vista para crear el primer canal durante el onboarding
                 <strong>Notas importantes:</strong><br>
                 • Los campos <code>credentials_to_send_message</code> y <code>api_to_send_message</code> son opcionales<br>
                 • Puedes usar variables como <code>{token}</code>, <code>{phone}</code> en la URL si están definidas en credenciales<br>
-                • Si tu API requiere autenticación, define la clave "token" en las credenciales<br><br>
-                <strong>Configuración avanzada:</strong><br>
-                • <strong>Buffer de tiempo:</strong> Agrupa mensajes consecutivos del usuario en este período<br>
-                • <strong>Mensajes de historial:</strong> Cantidad de mensajes previos que se envían al agente para contexto<br>
-                • <strong>Ventana reciente:</strong> Solo mensajes dentro de este tiempo se consideran para el historial
+                • Si tu API requiere autenticación, define la clave "token" en las credenciales
               </div>
             </v-alert>
 
@@ -239,7 +192,7 @@ Vista para crear el primer canal durante el onboarding
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { channelsService } from '@/services/channels/channelsService'
 import { PlatformType } from '@/types/api'
@@ -260,10 +213,7 @@ const channelData = reactive<CreateChannelRequest>({
   name: '',
   platform: PlatformType.WHATSAPP,
   credentials_to_send_message: undefined,
-  api_to_send_message: '',
-  buffer_time_seconds: 3,
-  history_msg_count: 40,
-  recent_msg_window_minutes: 1440 // 60*24 = 1 día
+  api_to_send_message: ''
 })
 
 // Credentials management
@@ -289,6 +239,9 @@ const getPlatformLabel = (platform: string): string => {
   return labels[platform] || platform
 }
 
+// Check if current platform is Twilio
+const isTwilioPlatform = computed(() => channelData.platform === 'WHATSAPP_TWILIO')
+
 // Validation rules
 const nameRules = [
   (v: string) => !!v || 'El nombre del canal es requerido',
@@ -299,21 +252,6 @@ const platformRules = [
   (v: string) => !!v || 'Selecciona una plataforma'
 ]
 
-// Validation rules for advanced settings
-const bufferTimeRules = [
-  (v: number) => v >= 1 || 'Debe ser al menos 1 segundo',
-  (v: number) => v <= 30 || 'Máximo 30 segundos'
-]
-
-const historyCountRules = [
-  (v: number) => v >= 1 || 'Debe ser al menos 1 mensaje',
-  (v: number) => v <= 100 || 'Máximo 100 mensajes'
-]
-
-const recentWindowRules = [
-  (v: number) => v >= 60 || 'Debe ser al menos 60 minutos (1 hora)',
-  (v: number) => v <= 10080 || 'Máximo 10080 minutos (7 días)'
-]
 
 // Credentials methods
 const addCredential = () => {
@@ -324,9 +262,33 @@ const removeCredential = (index: number) => {
   credentials.value.splice(index, 1)
 }
 
+// Initialize Twilio credentials with predefined keys
+const initializeTwilioCredentials = () => {
+  credentials.value = [
+    { key: 'from_number', value: '' },
+    { key: 'user', value: '' },
+    { key: 'token', value: '' }
+  ]
+}
+
+// Get placeholder text for Twilio fields
+const getTwilioPlaceholder = (key: string): string => {
+  if (!isTwilioPlatform.value) {
+    return key === 'token' ? 'tu_token_aqui' : 'valor'
+  }
+
+  const twilioPlaceholders: Record<string, string> = {
+    'from_number': '+1234567890',
+    'user': 'tu_account_sid',
+    'token': 'tu_auth_token'
+  }
+
+  return twilioPlaceholders[key] || 'valor'
+}
+
 // Convert credentials to object
 const credentialsObject = computed(() => {
-  const obj: Record<string, any> = {}
+  const obj: Record<string, string> = {}
   credentials.value.forEach(cred => {
     if (cred.key && cred.value) {
       obj[cred.key] = cred.value
@@ -348,10 +310,7 @@ const handleCreateChannel = async () => {
       name: channelData.name,
       platform: channelData.platform,
       credentials_to_send_message: credentialsObject.value,
-      api_to_send_message: channelData.api_to_send_message || undefined,
-      buffer_time_seconds: channelData.buffer_time_seconds,
-      history_msg_count: channelData.history_msg_count,
-      recent_msg_window_minutes: channelData.recent_msg_window_minutes
+      api_to_send_message: channelData.api_to_send_message || undefined
     }
 
     const channel = await channelsService.createChannel(requestData)
@@ -365,8 +324,8 @@ const handleCreateChannel = async () => {
         channelPlatform: channel.platform
       }
     })
-  } catch (err: any) {
-    error.value = err.detail || 'Error al crear el canal. Intenta de nuevo.'
+  } catch (err: unknown) {
+    error.value = (err as { detail?: string }).detail || 'Error al crear el canal. Intenta de nuevo.'
   } finally {
     isLoading.value = false
   }
@@ -383,12 +342,12 @@ const loadPlatforms = async () => {
     
     // Set default platform if available
     if (availablePlatforms.value.length > 0 && !channelData.platform) {
-      channelData.platform = availablePlatforms.value[0] as any
+      channelData.platform = availablePlatforms.value[0] as PlatformType
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     platformsError.value = 'Error al cargar plataformas disponibles'
     console.error('Error loading platforms:', err)
-    
+
     // Fallback to hardcoded platforms
     availablePlatforms.value = ['WHATSAPP', 'WHATSAPP_TWILIO', 'TELEGRAM', 'INSTAGRAM']
     channelData.platform = PlatformType.WHATSAPP
@@ -396,6 +355,13 @@ const loadPlatforms = async () => {
     isLoadingPlatforms.value = false
   }
 }
+
+// Watchers
+watch(() => channelData.platform, (newPlatform) => {
+  if (newPlatform === 'WHATSAPP_TWILIO') {
+    initializeTwilioCredentials()
+  }
+})
 
 onMounted(() => {
   loadPlatforms()

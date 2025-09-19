@@ -5,7 +5,7 @@
  * Actualizados para sincronizar con la API
  */
 
-import type { MessageType, MessageStatus } from './api'
+import type { MessageType, MessageStatus, DeliveryStatus } from './api'
 
 export interface Message {
   id: string
@@ -14,6 +14,7 @@ export interface Message {
   content: MessageContent
   type: MessageType
   status: MessageStatus
+  delivery_status: DeliveryStatus | null
   timestamp: Date
   replyTo?: string
   reactions: Reaction[]
@@ -24,7 +25,7 @@ export interface Message {
 }
 
 // Re-exportar los enums de api.ts para mantener compatibilidad
-export { MessageType, MessageStatus }
+export { MessageType, MessageStatus, DeliveryStatus }
 
 export interface MessageContent {
   text?: string
@@ -66,4 +67,10 @@ export interface MessageInput {
   text: string
   attachments: File[]
   replyTo?: string
+}
+
+export interface TypingUser {
+  userId: string
+  name: string
+  timestamp: Date
 }

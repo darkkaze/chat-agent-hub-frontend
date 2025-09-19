@@ -2,6 +2,37 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { authService } from '@/services/auth/authService'
 import { useAuthStore } from '@/stores/auth'
 
+// Cache for hasUsers result to prevent infinite loops
+let hasUsersCache: { result: boolean; timestamp: number } | null = null
+const CACHE_DURATION = 60000 // 1 minute cache
+
+async function getCachedHasUsers(): Promise<boolean> {
+  const now = Date.now()
+
+  // Check if cache is valid
+  if (hasUsersCache && (now - hasUsersCache.timestamp) < CACHE_DURATION) {
+    return hasUsersCache.result
+  }
+
+  // Cache is invalid or doesn't exist, fetch new result
+  try {
+    const { has_users } = await authService.hasUsers()
+    hasUsersCache = {
+      result: has_users,
+      timestamp: now
+    }
+    return has_users
+  } catch (error) {
+    console.error('Error checking hasUsers:', error)
+    // If there's an error, don't cache and return false as fallback
+    return false
+  }
+}
+
+function clearHasUsersCache(): void {
+  hasUsersCache = null
+}
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -105,8 +136,8 @@ router.beforeEach(async (to, from, next) => {
   }
   
   try {
-    // Verificar si el sistema tiene usuarios
-    const { has_users } = await authService.hasUsers()
+    // Verificar si el sistema tiene usuarios (con cache)
+    const has_users = await getCachedHasUsers()
     
     // Si es ruta de auth, manejar lógica especial
     if (isAuthRoute) {
@@ -163,3 +194,4 @@ router.beforeEach(async (to, from, next) => {
 })
 
 export default router
+export { clearHasUsersCache }
