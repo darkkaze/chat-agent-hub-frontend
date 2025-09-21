@@ -17,16 +17,24 @@ const configs = {
     timezone: 'America/Mexico_City', // GMT-6
   },
   development: {
-    apiBaseUrl: 'https://api.dev.agenthub.com',
-    websocketUrl: 'wss://api.dev.agenthub.com/ws',
+    get apiBaseUrl() {
+      return `${location.protocol}//${location.host}/api`
+    },
+    get websocketUrl() {
+      return `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/api/ws`
+    },
     debug: true,
     environment: 'development',
     locale: 'es-MX',
     timezone: 'America/Mexico_City', // GMT-6
   },
   production: {
-    apiBaseUrl: 'https://api.agenthub.com',
-    websocketUrl: 'wss://api.agenthub.com/ws',
+    get apiBaseUrl() {
+      return `${location.protocol}//${location.host}/api`
+    },
+    get websocketUrl() {
+      return `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/api/ws`
+    },
     debug: false,
     environment: 'production',
     locale: 'es-MX',
@@ -52,10 +60,18 @@ export const toLocalTimezone = (utcTimestamp: string): Date => {
  * Formatea una fecha para mostrar en la timezone configurada
  */
 export const formatDateWithTimezone = (utcTimestamp: string, options?: Intl.DateTimeFormatOptions): string => {
+  if (!utcTimestamp) {
+    throw new Error('Invalid timestamp: timestamp is required')
+  }
+
   // Agregar 'Z' al final si no tiene timezone indicator para forzar UTC
   const normalizedTimestamp = utcTimestamp.endsWith('Z') ? utcTimestamp : `${utcTimestamp}Z`
   const date = new Date(normalizedTimestamp)
-  
+
+  if (isNaN(date.getTime())) {
+    throw new Error(`Invalid timestamp: ${utcTimestamp}`)
+  }
+
   return date.toLocaleString(config.locale, {
     timeZone: config.timezone,
     ...options
@@ -67,11 +83,19 @@ export const formatDateWithTimezone = (utcTimestamp: string, options?: Intl.Date
  * considerando la timezone configurada
  */
 export const getTimeDifferenceMs = (utcTimestamp: string): number => {
+  if (!utcTimestamp) {
+    throw new Error('Invalid timestamp: timestamp is required')
+  }
+
   // Agregar 'Z' al final si no tiene timezone indicator para forzar UTC
   const normalizedTimestamp = utcTimestamp.endsWith('Z') ? utcTimestamp : `${utcTimestamp}Z`
   const messageDate = new Date(normalizedTimestamp)
   const now = new Date()
-  
+
+  if (isNaN(messageDate.getTime())) {
+    throw new Error(`Invalid timestamp: ${utcTimestamp}`)
+  }
+
   // Calcular la diferencia considerando que ambas fechas están en la misma timezone
   return now.getTime() - messageDate.getTime()
 }

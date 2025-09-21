@@ -25,7 +25,7 @@ export interface Message {
 }
 
 // Re-exportar los enums de api.ts para mantener compatibilidad
-export { MessageType, MessageStatus, DeliveryStatus }
+export { type MessageType, type MessageStatus, type DeliveryStatus }
 
 export interface MessageContent {
   text?: string

@@ -86,6 +86,11 @@ const router = createRouter({
           path: 'create-agent',
           name: 'onboarding-create-agent',
           component: () => import('@/views/onboarding/CreateAgent.vue')
+        },
+        {
+          path: 'agent-token',
+          name: 'onboarding-agent-token',
+          component: () => import('@/views/onboarding/AgentTokenView.vue')
         }
       ]
     },

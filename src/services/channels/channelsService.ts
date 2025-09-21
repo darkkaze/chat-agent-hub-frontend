@@ -20,7 +20,7 @@ import type {
   CreateChannelRequest,
   UpdateChannelRequest
 } from '@/types/channels'
-import type { MessageResponse } from '@/types/api'
+import type { ApiMessageResponse } from '@/types/api'
 
 export class ChannelsService {
   async getChannels(): Promise<ChannelResponse[]> {
@@ -43,8 +43,8 @@ export class ChannelsService {
     return apiService.put<ChannelResponse>(`/channels/${channelId}`, channelData)
   }
 
-  async deleteChannel(channelId: string): Promise<MessageResponse> {
-    return apiService.delete<MessageResponse>(`/channels/${channelId}`)
+  async deleteChannel(channelId: string): Promise<ApiMessageResponse> {
+    return apiService.delete<ApiMessageResponse>(`/channels/${channelId}`)
   }
 }
 

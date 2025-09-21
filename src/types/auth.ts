@@ -110,3 +110,18 @@ export enum UserRole {
 export interface HasUsersResponse {
   has_users: boolean
 }
+
+// Agent Tokens Types
+export interface AgentTokenResponse {
+  access_token: string
+  expires_at: string
+}
+
+export interface AgentTokensListResponse {
+  tokens: AgentTokenResponse[]
+}
+
+export interface CreateAgentTokenResponse {
+  access_token: string
+  expires_at: string
+}

@@ -14,9 +14,9 @@ import { apiService, buildQueryParams } from '@/services/api'
 import type {
   ChatMessagesResponse,
   MessagesFiltersParams,
-  SendMessageRequest
+  SendMessageRequest,
+  MessageResponse
 } from '@/types/channels'
-import type { MessageResponse } from '@/types/api'
 
 export class MessagesService {
   async getChatMessages(

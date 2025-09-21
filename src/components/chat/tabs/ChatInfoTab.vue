@@ -57,7 +57,7 @@ Emits: @assign-user, @mark-read
               <v-icon color="on-surface-variant">mdi-calendar</v-icon>
             </template>
             <v-list-item-title>Creado</v-list-item-title>
-            <v-list-item-subtitle>{{ formatDate(chat.created_at) }}</v-list-item-subtitle>
+            <v-list-item-subtitle>{{ chat.created_at ? formatDate(chat.created_at) : 'No disponible' }}</v-list-item-subtitle>
           </v-list-item>
         </v-list>
       </v-card>
@@ -268,32 +268,51 @@ const hasExtraData = computed(() => {
 
 // Methods
 const formatDate = (dateString: string) => {
-  return formatDateWithTimezone(dateString, {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  })
+  if (!dateString) return 'No disponible'
+
+  try {
+    return formatDateWithTimezone(dateString, {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    })
+  } catch (error) {
+    console.warn('Error formatting date:', dateString, error)
+    return 'Fecha inválida'
+  }
 }
 
 const formatLastActivity = (dateString: string) => {
-  const now = new Date()
-  const date = new Date(dateString)
-  const diffMs = now.getTime() - date.getTime()
-  const diffHours = diffMs / (1000 * 60 * 60)
-  const diffDays = diffHours / 24
+  if (!dateString) return 'No disponible'
 
-  if (diffHours < 1) {
-    const diffMinutes = Math.floor(diffMs / (1000 * 60))
-    return `Hace ${diffMinutes} minutos`
-  } else if (diffHours < 24) {
-    return `Hace ${Math.floor(diffHours)} horas`
-  } else if (diffDays < 7) {
-    return `Hace ${Math.floor(diffDays)} días`
-  } else {
-    return formatDate(dateString)
+  try {
+    const now = new Date()
+    const date = new Date(dateString)
+
+    if (isNaN(date.getTime())) {
+      return 'Fecha inválida'
+    }
+
+    const diffMs = now.getTime() - date.getTime()
+    const diffHours = diffMs / (1000 * 60 * 60)
+    const diffDays = diffHours / 24
+
+    if (diffHours < 1) {
+      const diffMinutes = Math.floor(diffMs / (1000 * 60))
+      return `Hace ${diffMinutes} minutos`
+    } else if (diffHours < 24) {
+      return `Hace ${Math.floor(diffHours)} horas`
+    } else if (diffDays < 7) {
+      return `Hace ${Math.floor(diffDays)} días`
+    } else {
+      return formatDate(dateString)
+    }
+  } catch (error) {
+    console.warn('Error formatting last activity:', dateString, error)
+    return 'No disponible'
   }
 }
 

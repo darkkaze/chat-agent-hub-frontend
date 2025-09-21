@@ -10,7 +10,7 @@
 
       <div v-if="hasMediaContent" class="message-media mb-2">
         <v-img
-          v-if="isImage"
+          v-if="isImage && mediaUrl"
           :src="mediaUrl"
           :alt="'Imagen'"
           max-width="300"

@@ -217,8 +217,11 @@ const chatStatus = computed(() => {
 const loadChat = async () => {
   const channelId = route.params.channelId as string
   const chatId = route.params.chatId as string
-  
-  if (!channelId || !chatId) return
+
+  if (!channelId || !chatId) {
+    console.warn('Missing channelId or chatId in route params')
+    return
+  }
 
   isLoading.value = true
   error.value = ''
@@ -226,7 +229,8 @@ const loadChat = async () => {
   try {
     chat.value = await chatsService.getChat(channelId, chatId)
   } catch (err: any) {
-    error.value = err.detail || 'Error al cargar el chat'
+    const errorMessage = err?.detail || err?.message || 'Error al cargar el chat'
+    error.value = errorMessage
     console.error('Error loading chat:', err)
   } finally {
     isLoading.value = false
@@ -269,7 +273,8 @@ const loadMessages = async (offset = 0, append = false) => {
     currentOffset.value = offset + loadedMessages.length
 
   } catch (err: any) {
-    error.value = err.detail || err.message || 'Error al cargar los mensajes'
+    const errorMessage = err?.detail || err?.message || 'Error al cargar los mensajes'
+    error.value = errorMessage
     console.error('Error loading messages:', err)
   } finally {
     isLoading.value = false
@@ -298,7 +303,8 @@ const sendMessage = async (messageData: SendMessageRequest) => {
     }
 
   } catch (err: any) {
-    error.value = err.detail || 'Error al enviar el mensaje'
+    const errorMessage = err?.detail || err?.message || 'Error al enviar el mensaje'
+    error.value = errorMessage
     console.error('Error sending message:', err)
   } finally {
     isSending.value = false

@@ -17,7 +17,7 @@ import type {
   BoardResponse,
   CreateBoardRequest
 } from '@/types/boards'
-import type { MessageResponse } from '@/types/api'
+import type { ApiMessageResponse } from '@/types/api'
 
 export class BoardsService {
   async getBoards(): Promise<BoardResponse[]> {
@@ -32,9 +32,9 @@ export class BoardsService {
     return apiService.get<BoardResponse>(`/boards/${boardId}`)
   }
 
-  async deleteBoard(boardId: string, hard = false): Promise<MessageResponse> {
+  async deleteBoard(boardId: string, hard = false): Promise<ApiMessageResponse> {
     const queryParams = buildQueryParams({ hard })
-    return apiService.delete<MessageResponse>(`/boards/${boardId}${queryParams}`)
+    return apiService.delete<ApiMessageResponse>(`/boards/${boardId}${queryParams}`)
   }
 }
 

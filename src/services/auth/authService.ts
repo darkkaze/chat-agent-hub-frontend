@@ -33,7 +33,7 @@ import type {
   AgentResponse,
   HasUsersResponse
 } from '@/types/auth'
-import type { MessageResponse } from '@/types/api'
+import type { ApiMessageResponse } from '@/types/api'
 
 export class AuthService {
   // System check
@@ -82,9 +82,9 @@ export class AuthService {
     return apiService.put<UserResponse>(`/auth/users/${userId}`, userData)
   }
 
-  async deleteUser(userId: string, hard = false): Promise<MessageResponse> {
+  async deleteUser(userId: string, hard = false): Promise<ApiMessageResponse> {
     const queryParams = buildQueryParams({ hard })
-    return apiService.delete<MessageResponse>(`/auth/users/${userId}${queryParams}`)
+    return apiService.delete<ApiMessageResponse>(`/auth/users/${userId}${queryParams}`)
   }
 
   // Agents Management
@@ -101,9 +101,9 @@ export class AuthService {
     return apiService.put<AgentResponse>(`/auth/agents/${agentId}`, agentData)
   }
 
-  async deleteAgent(agentId: string, hard = false): Promise<MessageResponse> {
+  async deleteAgent(agentId: string, hard = false): Promise<ApiMessageResponse> {
     const queryParams = buildQueryParams({ hard })
-    return apiService.delete<MessageResponse>(`/auth/agents/${agentId}${queryParams}`)
+    return apiService.delete<ApiMessageResponse>(`/auth/agents/${agentId}${queryParams}`)
   }
 }
 

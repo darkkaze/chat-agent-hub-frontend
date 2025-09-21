@@ -20,7 +20,7 @@ export interface ApiError {
   type?: string
 }
 
-export interface MessageResponse {
+export interface ApiMessageResponse {
   message: string
 }
 
@@ -73,4 +73,5 @@ export interface BaseEntity {
 export interface PaginationParams {
   limit?: number
   offset?: number
+  [key: string]: unknown
 }

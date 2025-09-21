@@ -123,7 +123,7 @@ Emits: @agent-updated
                 color="primary"
                 density="compact"
                 hide-details
-                @update:model-value="toggleAgent(chatAgent, $event)"
+                @update:model-value="$event !== null && toggleAgent(chatAgent, $event)"
               />
               <p class="text-caption text-center mt-1">
                 {{ chatAgent.active ? 'Habilitado' : 'Deshabilitado' }}
@@ -180,7 +180,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-defineEmits<{
+const emit = defineEmits<{
   'agent-updated': [agentId: string, active: boolean]
 }>()
 

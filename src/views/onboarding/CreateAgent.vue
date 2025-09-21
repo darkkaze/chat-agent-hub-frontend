@@ -345,14 +345,17 @@ const handleCreateAgent = async () => {
 
   try {
     const agent = await authService.createAgent(agentData)
-    
-    // Guardar el canal como último visitado
-    if (channelId.value) {
-      authStore.setLastVisitedChannel(channelId.value)
+
+    // Redirect to token view to show the agent's token
+    const tokenViewQuery = {
+      agentId: agent.id,
+      ...(channelId.value && { channelId: channelId.value })
     }
-    
-    // Complete onboarding - redirect to the created channel
-    router.push(`/channel/${channelId.value}`)
+
+    router.push({
+      path: '/onboarding/agent-token',
+      query: tokenViewQuery
+    })
   } catch (err: any) {
     error.value = err.detail || 'Error al crear el agente. Intenta de nuevo.'
   } finally {

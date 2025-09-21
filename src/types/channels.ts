@@ -57,6 +57,7 @@ export interface ChatFiltersParams {
   offset?: number
   assigned_user_id?: string | null
   assigned?: boolean | null
+  [key: string]: unknown
 }
 
 export interface AssignChatRequest {
@@ -106,6 +107,7 @@ export interface ChatMessagesResponse {
 export interface MessagesFiltersParams {
   limit?: number
   offset?: number
+  [key: string]: unknown
 }
 
 // Typing indicator

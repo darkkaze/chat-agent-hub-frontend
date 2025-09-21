@@ -136,7 +136,7 @@ const fileInput = ref<HTMLInputElement>()
 const messageText = ref('')
 const attachments = ref<MessageAttachment[]>([])
 const showAttachMenu = ref(false)
-const typingTimeout = ref<NodeJS.Timeout | null>(null)
+const typingTimeout = ref<number | null>(null)
 
 // Methods
 const sendMessage = () => {

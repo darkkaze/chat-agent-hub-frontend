@@ -24,10 +24,10 @@ export const useWebSocketStore = defineStore('websocket', () => {
   // State
   const connection = ref({
     status: Status.DISCONNECTED,
-    lastConnected: undefined,
-    lastDisconnected: undefined,
+    lastConnected: undefined as Date | undefined,
+    lastDisconnected: undefined as Date | undefined,
     reconnectAttempt: 0,
-    error: undefined
+    error: undefined as string | undefined
   })
 
   const lastEvent = ref<WebSocketEvent | undefined>(undefined)
