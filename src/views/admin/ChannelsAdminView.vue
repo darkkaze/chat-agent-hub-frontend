@@ -10,14 +10,14 @@ Ruta: /admin/channels
 -->
 
 <template>
-  <div class="admin-view">
+  <div class="admin-view d-flex flex-column h-100">
     <!-- Header -->
-    <div class="admin-header pa-6 border-b d-flex align-center justify-space-between">
+    <div class="admin-header px-4 py-3 border-b d-flex align-center justify-space-between">
       <div>
-        <h1 class="text-h4 font-weight-bold mb-2">
+        <h1 class="text-subtitle-1 font-weight-medium mb-1">
           Gestión de Canales
         </h1>
-        <p class="text-body-1 text-on-surface-variant">
+        <p class="text-caption text-on-surface-variant">
           Administra los canales de comunicación conectados
         </p>
       </div>
@@ -25,65 +25,63 @@ Ruta: /admin/channels
       <v-btn
         color="primary"
         prepend-icon="mdi-plus"
-        size="large"
+        size="small"
         @click="openCreateModal"
       >
         Agregar Canal
       </v-btn>
     </div>
 
-    <!-- Content -->
-    <div class="admin-content pa-6">
-      <!-- Search and Filters -->
-      <v-card variant="outlined" class="mb-6">
-        <v-card-text>
-          <v-row align="center">
-            <v-col cols="12" md="6">
-              <v-text-field
-                v-model="searchQuery"
-                label="Buscar canales"
-                prepend-inner-icon="mdi-magnify"
-                variant="outlined"
-                density="compact"
-                clearable
-                hide-details
-              />
-            </v-col>
-            <v-col cols="12" md="4">
-              <v-select
-                v-model="platformFilter"
-                :items="platformOptions"
-                label="Filtrar por plataforma"
-                variant="outlined"
-                density="compact"
-                clearable
-                hide-details
-              />
-            </v-col>
-            <v-col cols="12" md="2" class="text-right">
-              <v-chip
-                v-if="filteredChannels.length"
-                color="primary"
-                variant="outlined"
-                size="small"
-              >
-                {{ filteredChannels.length }} canal{{ filteredChannels.length === 1 ? '' : 'es' }}
-              </v-chip>
-            </v-col>
-          </v-row>
-        </v-card-text>
-      </v-card>
+    <!-- Search and Filters -->
+    <div class="px-4 py-3 border-b">
+      <v-row align="center" no-gutters>
+        <v-col cols="12" md="6" class="pr-md-3">
+          <v-text-field
+            v-model="searchQuery"
+            placeholder="Buscar canales"
+            prepend-inner-icon="mdi-magnify"
+            variant="outlined"
+            density="compact"
+            clearable
+            hide-details
+          />
+        </v-col>
+        <v-col cols="12" md="4" class="px-md-3">
+          <v-select
+            v-model="platformFilter"
+            :items="platformOptions"
+            placeholder="Filtrar por plataforma"
+            variant="outlined"
+            density="compact"
+            clearable
+            hide-details
+          />
+        </v-col>
+        <v-col cols="12" md="2" class="pl-md-3 text-right">
+          <v-chip
+            v-if="filteredChannels.length"
+            color="primary"
+            variant="outlined"
+            size="small"
+          >
+            {{ filteredChannels.length }} canal{{ filteredChannels.length === 1 ? '' : 'es' }}
+          </v-chip>
+        </v-col>
+      </v-row>
+    </div>
 
+    <!-- Content -->
+    <div class="admin-content flex-1-1 overflow-hidden">
       <!-- Channels Table -->
-      <v-card variant="outlined">
-        <v-data-table
-          :headers="tableHeaders"
-          :items="filteredChannels"
-          :loading="isLoading"
-          :no-data-text="noDataText"
-          item-key="id"
-          class="channels-table"
-        >
+      <v-data-table
+        :headers="tableHeaders"
+        :items="filteredChannels"
+        :loading="isLoading"
+        :no-data-text="noDataText"
+        item-key="id"
+        class="channels-table h-100"
+        density="compact"
+      >
           <!-- Platform column -->
           <template #[`item.platform`]="{ item }">
             <div class="d-flex align-center">
@@ -136,7 +134,6 @@ Ruta: /admin/channels
             </div>
           </template>
         </v-data-table>
-      </v-card>
     </div>
 
     <!-- Create Channel Modal -->
@@ -375,9 +372,7 @@ onMounted(() => {
 <style scoped>
 .admin-view {
   height: 100vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  background: rgb(var(--v-theme-surface));
 }
 
 .admin-header {
@@ -386,16 +381,46 @@ onMounted(() => {
 }
 
 .admin-content {
-  flex: 1;
-  overflow-y: auto;
-  background: rgb(var(--v-theme-background));
+  background: rgb(var(--v-theme-surface));
 }
 
 .channels-table {
   background: transparent;
 }
 
+.channels-table :deep(.v-data-table__wrapper) {
+  height: 100%;
+}
+
 .border-b {
   border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+}
+
+/* Remove default padding from v-row in compact mode */
+.admin-view :deep(.v-row) {
+  margin: 0;
+}
+
+.admin-view :deep(.v-col) {
+  padding: 0;
+}
+
+.admin-view :deep(.v-col.pr-md-3) {
+  padding-right: 12px;
+}
+
+.admin-view :deep(.v-col.px-md-3) {
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.admin-view :deep(.v-col.pl-md-3) {
+  padding-left: 12px;
+}
+
+@media (max-width: 959px) {
+  .admin-view :deep(.v-col) {
+    padding: 4px 0;
+  }
 }
 </style>
