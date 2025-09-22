@@ -39,29 +39,6 @@ Emits: @chat-selected cuando se selecciona un chat
       />
     </div>
 
-    <!-- Filters -->
-    <div class="px-4 py-2 border-b">
-      <v-chip-group
-        v-model="selectedFilter"
-        color="primary"
-        variant="outlined"
-        density="compact"
-        @update:model-value="handleFilterChange"
-      >
-        <v-chip value="all" size="small">Todos</v-chip>
-        <v-chip value="unread" size="small">
-          No leídos
-          <v-badge
-            v-if="unreadCount > 0"
-            :content="unreadCount"
-            color="error"
-            inline
-            class="ml-1"
-          />
-        </v-chip>
-        <v-chip value="assigned" size="small">Asignados</v-chip>
-      </v-chip-group>
-    </div>
 
     <!-- Chat List -->
     <div class="chat-list flex-1-1 overflow-y-auto">
@@ -139,7 +116,6 @@ const chats = ref<ChatResponse[]>([])
 const isLoading = ref(false)
 const error = ref('')
 const searchQuery = ref('')
-const selectedFilter = ref('all')
 const channelName = ref('')
 const selectedChatId = computed(() => route.params.chatId as string | undefined)
 
@@ -228,20 +204,6 @@ const normalizeChat = (chat: ChatResponse | UnifiedChatResponse): ChatResponse =
 }
 
 // Computed
-const unreadCount = computed(() => {
-  const sourceChats = displayChats.value
-  if (!sourceChats) return 0
-
-  return sourceChats.filter((chat: unknown) => {
-    if (isChatResponse(chat)) {
-      // ChatResponse has unread_count
-      return chat.unread_count > 0
-    } else {
-      // UnifiedChatResponse doesn't have unread_count, return 0 for now
-      return false
-    }
-  }).length
-})
 
 const filteredChats = computed(() => {
   // Use displayChats which already handles the showAllChats logic
@@ -277,34 +239,6 @@ const filteredChats = computed(() => {
         return name.includes(query) || message.includes(query)
       }
     })
-  }
-
-  // Apply filters
-  switch (selectedFilter.value) {
-    case 'unread':
-      filtered = filtered.filter(chat => {
-        if (isChatResponse(chat)) {
-          return chat.unread_count > 0
-        } else {
-          // UnifiedChatResponse doesn't have unread_count
-          return false
-        }
-      })
-      break
-    case 'assigned':
-      filtered = filtered.filter(chat => {
-        if (isChatResponse(chat)) {
-          return chat.is_assigned
-        } else if (isUnifiedChat(chat)) {
-          return chat.assigned_user_id !== null
-        } else {
-          return false
-        }
-      })
-      break
-    default:
-      // 'all' - no additional filtering
-      break
   }
 
   return filtered
@@ -366,9 +300,6 @@ const handleSearch = () => {
   // For channel mode, search is handled by filteredChats computed
 }
 
-const handleFilterChange = () => {
-  // Filter is reactive through computed property
-}
 
 // WebSocket event handlers
 const handleNewMessage = (event: NewMessageEvent) => {

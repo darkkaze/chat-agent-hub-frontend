@@ -298,7 +298,7 @@ const mainNavigation = ref<Channel[]>([
 ])
 
 const adminActions = ref<Action[]>([
-  { name: 'Canales', icon: 'mdi-chat-processing' },
+  { name: 'Canales', icon: 'mdi-broadcast' },
   { name: 'Usuarios', icon: 'mdi-account-group' },
   { name: 'Agentes', icon: 'mdi-robot' },
 ])
