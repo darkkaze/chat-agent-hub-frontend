@@ -74,10 +74,10 @@ Emits: ninguno por ahora
 
       <v-divider />
 
-      <!-- Channel Buttons Section -->
+      <!-- Main Navigation Section -->
       <div class="px-2 py-2">
-        <div 
-          v-for="(channel, index) in channels" 
+        <div
+          v-for="(channel, index) in mainNavigation" 
           :key="index"
           class="mb-2 d-flex"
           :class="isCompact && !isMobileOrTabletPortrait ? 'justify-center' : ''"
@@ -122,10 +122,10 @@ Emits: ninguno por ahora
 
       <v-divider />
 
-      <!-- Secondary Buttons Section -->
+      <!-- Admin Actions Section -->
       <div class="px-2 py-2">
-        <div 
-          v-for="(action, index) in secondaryActions" 
+        <div
+          v-for="(action, index) in adminActions" 
           :key="index"
           class="mb-2 d-flex"
           :class="isCompact && !isMobileOrTabletPortrait ? 'justify-center' : ''"
@@ -256,7 +256,6 @@ Emits: ninguno por ahora
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { useDisplay } from 'vuetify'
 import { useRouter } from 'vue-router'
 
 // Types
@@ -293,41 +292,57 @@ const isCompact = ref(true) // Start in compact mode
 const drawerWidth = 200
 const mobileDrawerWidth = computed(() => Math.floor(window.innerWidth * 0.7))
 
-// Mock data - TODO: mover a store
-const channels = ref<Channel[]>([
-  { id: 'whatsapp', name: 'WhatsApp', icon: 'mdi-whatsapp', active: true, notifications: 5 },
-  { id: 'telegram', name: 'Telegram', icon: 'mdi-telegram', active: false, notifications: 0 },
-  { id: 'instagram', name: 'Instagram', icon: 'mdi-instagram', active: false, notifications: 2 },
-  { id: 'facebook', name: 'Facebook', icon: 'mdi-facebook', active: false, notifications: 0 },
-  { id: 'twitter', name: 'Twitter', icon: 'mdi-twitter', active: false, notifications: 1 },
+// Navigation sections
+const mainNavigation = ref<Channel[]>([
+  { id: 'all-chats', name: 'Todos los chats', icon: 'mdi-chat-outline', active: true, notifications: 0 },
 ])
 
-const secondaryActions = ref<Action[]>([
-  { name: 'Contactos', icon: 'mdi-account-group' },
-  { name: 'Plantillas', icon: 'mdi-file-document' },
-  { name: 'Estadísticas', icon: 'mdi-chart-line' },
+const adminActions = ref<Action[]>([
+  { name: 'Canales', icon: 'mdi-chat-processing' },
+  { name: 'Usuarios', icon: 'mdi-account-group' },
+  { name: 'Agentes', icon: 'mdi-robot' },
 ])
 
 // Methods
 const selectChannel = (channel: Channel) => {
-  // Reset all channels
-  channels.value.forEach(ch => ch.active = false)
-  // Set selected channel as active
+  // Reset all navigation items
+  mainNavigation.value.forEach(ch => ch.active = false)
+  // Set selected item as active
   channel.active = true
-  
-  // Close drawer when channel is selected on mobile/tablet portrait
+
+  // Close drawer when item is selected on mobile/tablet portrait
   if (isMobileOrTabletPortrait.value) {
     mobileDrawer.value = false
   }
-  
-  // Navigate to channel
-  router.push(`/channel/${channel.id}`)
+
+  // Navigate based on channel type
+  if (channel.id === 'all-chats') {
+    // Navigate to unified chats view
+    router.push('/chats')
+  } else {
+    router.push(`/channel/${channel.id}`)
+  }
 }
 
 const handleAction = (action: Action) => {
   // Close drawer when action is selected on mobile/tablet portrait
   if (isMobileOrTabletPortrait.value) {
     mobileDrawer.value = false
+  }
+
+  // Navigate to admin sections (placeholder routes for now)
+  switch (action.name) {
+    case 'Canales':
+      router.push('/admin/channels')
+      break
+    case 'Usuarios':
+      router.push('/admin/users')
+      break
+    case 'Agentes':
+      router.push('/admin/agents')
+      break
+    default:
+      console.log(`Action not implemented: ${action.name}`)
   }
 }
 

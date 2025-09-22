@@ -94,6 +94,13 @@ const router = createRouter({
         }
       ]
     },
+    // Unified chats view (all channels)
+    {
+      path: '/chats',
+      name: 'all-chats',
+      component: () => import('@/layouts/ChannelLayout.vue'),
+      meta: { requiresAuth: true }
+    },
     // Main app routes (protected)
     {
       path: '/channel/:channelId',
@@ -112,8 +119,31 @@ const router = createRouter({
         },
         {
           path: 'chat/:chatId/details',
-          name: 'chat-details', 
+          name: 'chat-details',
           component: () => import('@/views/ChatDetailsView.vue')
+        }
+      ]
+    },
+    // Admin routes (placeholders)
+    {
+      path: '/admin',
+      component: () => import('@/layouts/ChannelLayout.vue'),
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: 'channels',
+          name: 'admin-channels',
+          component: () => import('@/views/admin/ChannelsAdminView.vue')
+        },
+        {
+          path: 'users',
+          name: 'admin-users',
+          component: () => import('@/views/admin/UsersAdminView.vue')
+        },
+        {
+          path: 'agents',
+          name: 'admin-agents',
+          component: () => import('@/views/admin/AgentsAdminView.vue')
         }
       ]
     },

@@ -68,6 +68,7 @@ import ChannelView from '@/views/ChannelView.vue'
 const route = useRoute()
 const router = useRouter()
 
+
 const refreshChats = () => {
   // Reload the current route to refresh chat list
   router.go(0)
@@ -88,6 +89,8 @@ const refreshChats = () => {
   height: 100vh;
   overflow: hidden;
 }
+
+/* All chats layout uses same 2-column layout as channel layout */
 
 /* Chat list column - independent overflow */
 .chat-list-column {

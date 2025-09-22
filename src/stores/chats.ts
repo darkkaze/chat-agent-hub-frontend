@@ -58,8 +58,16 @@ export const useChatsStore = defineStore('chats', () => {
       const chats = response.chats || []
       chatsByChannel.value.set(channelId, chats)
       return chats
-    } catch (err: any) {
-      error.value = err.detail || err.message || 'Error al cargar los chats'
+    } catch (err: unknown) {
+      const getErrorMessage = (error: unknown): string => {
+        if (error instanceof Error) return error.message
+        if (error && typeof error === 'object' && 'detail' in error) {
+          return String((error as { detail: unknown }).detail)
+        }
+        return 'Error al cargar los chats'
+      }
+
+      error.value = getErrorMessage(err)
       console.error('Error fetching chats:', err)
       return []
     } finally {
@@ -74,7 +82,7 @@ export const useChatsStore = defineStore('chats', () => {
     await fetchChats(channelId, { limit: 100 })
   }
 
-  function updateChatFromWebSocket(channelId: string, chatId: string): void {
+  function updateChatFromWebSocket(channelId: string, _chatId: string): void {
     // Simple approach: refresh the entire channel's chats
     // In a more optimized version, we could update just the specific chat
     refreshChats(channelId)

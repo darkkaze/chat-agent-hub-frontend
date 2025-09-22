@@ -23,18 +23,42 @@ export interface NewMessageEvent {
   type: 'new_message'
   chat_id: string
   channel_id: string
+  channel_name?: string
   message_id: string
   sender_type: SenderType
   timestamp: string
   message_type: MessageType
+  content: string
   preview: string
   external_id: string
   chat_name: string
   chat_external_id: string
+  contact_name?: string
+  contact_avatar_url?: string
+  unread_count?: number
+  is_assigned?: boolean
+  assigned_to?: string
+  tags?: string[]
+  metadata?: Record<string, unknown>
+}
+
+// Chat update event (assignment, tags, etc.)
+export interface ChatUpdatedEvent {
+  type: 'chat_updated'
+  chat_id: string
+  channel_id: string
+  chat_data: unknown // Using unknown to avoid circular imports, will be UnifiedChatResponse
+}
+
+// Chat deletion event
+export interface ChatDeletedEvent {
+  type: 'chat_deleted'
+  chat_id: string
+  channel_id: string
 }
 
 // Union type for all possible WebSocket events
-export type WebSocketEvent = NewMessageEvent
+export type WebSocketEvent = NewMessageEvent | ChatUpdatedEvent | ChatDeletedEvent
 
 // WebSocket service configuration
 export interface WebSocketConfig {

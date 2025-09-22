@@ -12,12 +12,15 @@ import { ref, computed } from 'vue'
 import { websocketService } from '@/services/websocket/websocketService'
 import { useNotificationsStore } from '@/stores/notifications'
 import { visibilityService } from '@/services/browser/visibilityService'
+import { useAllChatsStore } from '@/stores/allChats'
 import type {
-  WebSocketState,
   WebSocketEvent,
   NewMessageEvent,
+  ChatUpdatedEvent,
+  ChatDeletedEvent,
   WebSocketStatus
 } from '@/types/websocket'
+import type { UnifiedChatResponse } from '@/types/allChats'
 import { WebSocketStatus as Status } from '@/types/websocket'
 
 export const useWebSocketStore = defineStore('websocket', () => {
@@ -57,8 +60,8 @@ export const useWebSocketStore = defineStore('websocket', () => {
     }
   })
 
-  // Event handlers
-  const eventHandlers = ref(new Map<string, Function[]>())
+  // Event handlers - using flexible callback type for generics compatibility
+  const eventHandlers = ref(new Map<string, Array<(event: unknown) => void>>())
 
   // Actions
   function initialize() {
@@ -103,13 +106,13 @@ export const useWebSocketStore = defineStore('websocket', () => {
     if (!eventHandlers.value.has(key)) {
       eventHandlers.value.set(key, [])
     }
-    eventHandlers.value.get(key)!.push(callback)
+    eventHandlers.value.get(key)!.push(callback as (event: unknown) => void)
   }
 
   function off<T extends WebSocketEvent>(eventType: T['type'], callback: (event: T) => void): void {
     const handlers = eventHandlers.value.get(eventType)
     if (handlers) {
-      const index = handlers.indexOf(callback as Function)
+      const index = handlers.indexOf(callback as (event: unknown) => void)
       if (index !== -1) {
         handlers.splice(index, 1)
       }
@@ -137,7 +140,9 @@ export const useWebSocketStore = defineStore('websocket', () => {
     try {
       // Get current route to check if user is in the same chat
       const currentPath = window.location.pathname
-      const isInSameChat = currentPath.includes(`/chat/${event.chat_id}`)
+      // Check both old channel-specific routes and new unified routes
+      const isInSameChat = currentPath.includes(`/chat/${event.chat_id}`) ||
+                          currentPath.includes(`/chats/${event.chat_id}`)
 
       // Check if browser/tab is currently visible
       const isPageVisible = visibilityService.getIsVisible()
@@ -176,6 +181,56 @@ export const useWebSocketStore = defineStore('websocket', () => {
     }
   }
 
+  // Handle events that affect the allChats store (multi-channel updates)
+  function handleMultiChannelEvents(event: WebSocketEvent) {
+    try {
+      const allChatsStore = useAllChatsStore()
+
+      switch (event.type) {
+        case 'new_message':
+          // Update chat's last message and move to top of list
+          const messageEvent = event as NewMessageEvent
+          const updatedChat: UnifiedChatResponse = {
+            id: messageEvent.chat_id,
+            channel_id: messageEvent.channel_id || '',
+            channel_name: messageEvent.channel_name || '',
+            external_id: messageEvent.chat_external_id || '',
+            name: messageEvent.contact_name || 'Unknown',
+            assigned_user_id: messageEvent.assigned_to || null,
+            last_message_ts: new Date().toISOString(),
+            last_sender_type: messageEvent.sender_type || null,
+            last_message: messageEvent.content,
+            meta_data: (messageEvent.metadata || {}) as Record<string, unknown>,
+            extra_data: {} as Record<string, unknown>,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }
+          allChatsStore.updateChatFromWebSocket(updatedChat)
+          break
+
+        case 'chat_updated':
+          // Handle chat updates (assignment, tags, etc.)
+          const chatUpdatedEvent = event as ChatUpdatedEvent
+          if (chatUpdatedEvent.chat_data) {
+            allChatsStore.updateChatFromWebSocket(chatUpdatedEvent.chat_data as UnifiedChatResponse)
+          }
+          break
+
+        case 'chat_deleted':
+          // Handle chat deletion
+          const chatDeletedEvent = event as ChatDeletedEvent
+          allChatsStore.removeChatFromWebSocket(chatDeletedEvent.chat_id)
+          break
+
+        default:
+          // Handle other event types as needed
+          break
+      }
+    } catch (error) {
+      console.error('Error handling multi-channel WebSocket event:', error)
+    }
+  }
+
   function handleMessage(event: WebSocketEvent) {
     lastEvent.value = event
     lastEventTime.value = new Date()
@@ -184,6 +239,9 @@ export const useWebSocketStore = defineStore('websocket', () => {
     if (event.type === 'new_message') {
       playNotificationForNewMessage(event as NewMessageEvent)
     }
+
+    // Handle multi-channel events for allChats store
+    handleMultiChannelEvents(event)
 
     // Emit to registered event handlers
     const handlers = eventHandlers.value.get(event.type)

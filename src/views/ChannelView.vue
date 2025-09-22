@@ -17,6 +17,14 @@ Emits: @chat-selected cuando se selecciona un chat
 <template>
   <div class="channel-view d-flex flex-column h-100">
 
+    <!-- Channel Selector (always visible) -->
+    <div class="px-4 py-3 border-b">
+      <ChannelSelector
+        v-model="selectedChannelId"
+        :channels="availableChannels"
+      />
+    </div>
+
     <!-- Search -->
     <div class="px-4 py-3 border-b">
       <v-text-field
@@ -58,20 +66,20 @@ Emits: @chat-selected cuando se selecciona un chat
     <!-- Chat List -->
     <div class="chat-list flex-1-1 overflow-y-auto">
       <!-- Loading state -->
-      <div v-if="isLoading" class="d-flex justify-center pa-8">
+      <div v-if="displayIsLoading" class="d-flex justify-center pa-8">
         <v-progress-circular indeterminate color="primary" />
       </div>
 
       <!-- Error state -->
-      <div v-else-if="error" class="pa-4">
+      <div v-else-if="displayError" class="pa-4">
         <v-alert type="error" variant="tonal">
-          {{ error }}
+          {{ displayError }}
         </v-alert>
       </div>
 
       <!-- Empty state -->
       <div 
-        v-else-if="filteredChats.length === 0 && !isLoading"
+        v-else-if="filteredChats.length === 0 && !displayIsLoading"
         class="empty-state pa-6 text-center"
       >
         <v-icon size="48" color="on-surface-variant" class="mb-3">
@@ -93,7 +101,7 @@ Emits: @chat-selected cuando se selecciona un chat
         <ChatListItem
           v-for="chat in filteredChats"
           :key="chat.id"
-          :chat="chat"
+          :chat="normalizeChat(chat)"
           :is-selected="selectedChatId === chat.id"
           @click="selectChat(chat)"
         />
@@ -107,20 +115,26 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useChatsStore } from '@/stores/chats'
+import { useAllChatsStore } from '@/stores/allChats'
 import { useWebSocketStore } from '@/stores/websocket'
-import { chatsService } from '@/services/channels/chatsService'
 import { channelsService } from '@/services/channels/channelsService'
 import ChatListItem from '@/components/chat/ChatListItem.vue'
-import type { ChatResponse, ChatFiltersParams } from '@/types/channels'
+import ChannelSelector from '@/components/chat/ChannelSelector.vue'
+import type { ChatResponse } from '@/types/channels'
 import type { NewMessageEvent } from '@/types/websocket'
+import type { UnifiedChatResponse } from '@/types/allChats'
+
+// Internal view mode state (decoupled from URL)
+const viewMode = ref<'all' | 'specific'>('specific')
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const chatsStore = useChatsStore()
+const allChatsStore = useAllChatsStore()
 const websocketStore = useWebSocketStore()
 
-// Reactive data
+// Reactive data - back to original local state
 const chats = ref<ChatResponse[]>([])
 const isLoading = ref(false)
 const error = ref('')
@@ -129,36 +143,164 @@ const selectedFilter = ref('all')
 const channelName = ref('')
 const selectedChatId = computed(() => route.params.chatId as string | undefined)
 
+// Channel selector state (decoupled from URL)
+const selectedChannelId = computed({
+  get: () => {
+    if (viewMode.value === 'all') {
+      return null // "Todos los canales"
+    } else {
+      return route.params.channelId as string || null
+    }
+  },
+  set: (value) => {
+    if (value === null) {
+      // User selected "Todos los canales" - navigate to /chats
+      router.push('/chats')
+    } else {
+      // User selected a specific channel - navigate to that channel
+      router.push(`/channel/${value}`)
+    }
+  }
+})
+
+const availableChannels = computed(() => {
+  // Always show all available channels (so user can switch)
+  return allChatsStore.availableChannels
+})
+
+// Display data based on view mode (decoupled from URL)
+const displayChats = computed(() => {
+  if (viewMode.value === 'all') {
+    return allChatsStore.filteredChats
+  } else {
+    return chats.value
+  }
+})
+
+const displayIsLoading = computed(() => {
+  if (viewMode.value === 'all') {
+    return allChatsStore.isLoading
+  } else {
+    return isLoading.value
+  }
+})
+
+const displayError = computed(() => {
+  if (viewMode.value === 'all') {
+    return allChatsStore.error
+  } else {
+    return error.value
+  }
+})
+
+// Type guards
+const isUnifiedChat = (chat: unknown): chat is UnifiedChatResponse => {
+  return typeof chat === 'object' && chat !== null && 'channel_id' in chat && 'channel_name' in chat
+}
+
+const isChatResponse = (chat: unknown): chat is ChatResponse => {
+  return typeof chat === 'object' && chat !== null && 'unread_count' in chat && 'is_assigned' in chat
+}
+
+// Convert UnifiedChatResponse to ChatResponse format for compatibility
+const normalizeChat = (chat: ChatResponse | UnifiedChatResponse): ChatResponse => {
+  if (isChatResponse(chat)) {
+    return chat
+  }
+
+  // Convert UnifiedChatResponse to ChatResponse format
+  return {
+    id: chat.id,
+    name: chat.name,
+    external_id: chat.external_id,
+    customer_name: chat.name, // Use name as customer_name fallback
+    customer_phone: '', // UnifiedChatResponse doesn't have this
+    assigned_user_id: chat.assigned_user_id || undefined,
+    assigned_user_name: undefined, // UnifiedChatResponse doesn't have this
+    last_message: chat.last_message || undefined,
+    last_message_at: chat.last_message_ts || new Date().toISOString(),
+    unread_count: 0, // UnifiedChatResponse doesn't have this
+    is_assigned: chat.assigned_user_id !== null,
+    extra_data: chat.extra_data || {},
+    created_at: chat.created_at,
+    updated_at: chat.updated_at
+  }
+}
+
 // Computed
-const unreadCount = computed(() => 
-  chats.value?.filter(chat => chat.unread_count > 0).length || 0
-)
+const unreadCount = computed(() => {
+  const sourceChats = displayChats.value
+  if (!sourceChats) return 0
+
+  return sourceChats.filter((chat: unknown) => {
+    if (isChatResponse(chat)) {
+      // ChatResponse has unread_count
+      return chat.unread_count > 0
+    } else {
+      // UnifiedChatResponse doesn't have unread_count, return 0 for now
+      return false
+    }
+  }).length
+})
 
 const filteredChats = computed(() => {
-  if (!chats.value || !Array.isArray(chats.value)) {
+  // Use displayChats which already handles the showAllChats logic
+  const sourceChats = displayChats.value
+
+  if (!sourceChats || !Array.isArray(sourceChats)) {
     return []
   }
-  
-  let filtered = [...chats.value]
+
+  // For viewMode 'all', the store already handles filtering
+  if (viewMode.value === 'all') {
+    return sourceChats
+  }
+
+  // For normal channel mode, apply local filtering
+  let filtered = [...sourceChats]
 
   // Apply text search
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(chat => 
-      chat.name?.toLowerCase().includes(query) ||
-      chat.customer_name?.toLowerCase().includes(query) ||
-      chat.customer_phone?.includes(query) ||
-      chat.last_message?.toLowerCase().includes(query)
-    )
+    filtered = filtered.filter(chat => {
+      const name = chat.name?.toLowerCase() || ''
+      const message = chat.last_message?.toLowerCase() || ''
+
+      if (isChatResponse(chat)) {
+        // ChatResponse has customer_name and customer_phone
+        const customerName = chat.customer_name?.toLowerCase() || ''
+        const customerPhone = chat.customer_phone || ''
+        return name.includes(query) || customerName.includes(query) ||
+               customerPhone.includes(query) || message.includes(query)
+      } else {
+        // UnifiedChatResponse only has basic fields
+        return name.includes(query) || message.includes(query)
+      }
+    })
   }
 
   // Apply filters
   switch (selectedFilter.value) {
     case 'unread':
-      filtered = filtered.filter(chat => chat.unread_count > 0)
+      filtered = filtered.filter(chat => {
+        if (isChatResponse(chat)) {
+          return chat.unread_count > 0
+        } else {
+          // UnifiedChatResponse doesn't have unread_count
+          return false
+        }
+      })
       break
     case 'assigned':
-      filtered = filtered.filter(chat => chat.is_assigned)
+      filtered = filtered.filter(chat => {
+        if (isChatResponse(chat)) {
+          return chat.is_assigned
+        } else if (isUnifiedChat(chat)) {
+          return chat.assigned_user_id !== null
+        } else {
+          return false
+        }
+      })
       break
     default:
       // 'all' - no additional filtering
@@ -176,8 +318,16 @@ const loadChats = async () => {
   try {
     const loadedChats = await chatsStore.fetchChats(channelId, { limit: 100 })
     chats.value = loadedChats
-  } catch (err: any) {
-    error.value = err.detail || 'Error al cargar las conversaciones'
+  } catch (err: unknown) {
+    const getErrorMessage = (error: unknown): string => {
+      if (error instanceof Error) return error.message
+      if (error && typeof error === 'object' && 'detail' in error) {
+        return String((error as { detail: unknown }).detail)
+      }
+      return 'Error al cargar las conversaciones'
+    }
+
+    error.value = getErrorMessage(err)
     console.error('Error loading chats:', err)
     chats.value = []
   }
@@ -196,13 +346,24 @@ const loadChannelInfo = async () => {
   }
 }
 
-const selectChat = (chat: ChatResponse) => {
-  const channelId = route.params.channelId as string
-  router.push(`/channel/${channelId}/chat/${chat.id}`)
+const selectChat = (chat: ChatResponse | UnifiedChatResponse) => {
+  if (viewMode.value === 'all') {
+    // In unified view, navigate to proper channel but keep "Todos" selection
+    const chatChannelId = isUnifiedChat(chat) ? chat.channel_id : route.params.channelId as string
+    router.push(`/channel/${chatChannelId}/chat/${chat.id}?viewMode=all`)
+  } else {
+    // In channel view, use channel-specific URL
+    const channelId = route.params.channelId as string
+    router.push(`/channel/${channelId}/chat/${chat.id}`)
+  }
 }
 
 const handleSearch = () => {
-  // Search is reactive through computed property
+  // For viewMode 'all', sync local search with store
+  if (viewMode.value === 'all') {
+    allChatsStore.setSearchQuery(searchQuery.value)
+  }
+  // For channel mode, search is handled by filteredChats computed
 }
 
 const handleFilterChange = () => {
@@ -239,14 +400,38 @@ watch(
   }
 )
 
+// Watch for viewMode changes in query parameters
+watch(
+  () => route.query.viewMode,
+  (newViewMode) => {
+    if (newViewMode === 'all') {
+      viewMode.value = 'all'
+    } else if (route.path.startsWith('/channel/')) {
+      viewMode.value = 'specific'
+    }
+  }
+)
+
 // Lifecycle
-onMounted(() => {
+onMounted(async () => {
+  // Check if we should start in 'all' view mode
+  if (route.query.viewMode === 'all' || route.path.startsWith('/chats')) {
+    viewMode.value = 'all'
+  }
+
+  // Always initialize channel-specific logic first
   const channelId = route.params.channelId as string
   if (channelId) {
     authStore.setLastVisitedChannel(channelId)
     loadChats()
     loadChannelInfo()
   }
+
+  // Always load available channels for the selector
+  await allChatsStore.loadChannels()
+
+  // Initialize all chats store for unified view capabilities
+  await allChatsStore.initialize()
 
   // Initialize WebSocket and listen for new messages
   websocketStore.initialize()
