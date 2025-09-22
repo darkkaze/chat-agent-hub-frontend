@@ -78,9 +78,11 @@ Ruta: /admin/channels
         :items="filteredChannels"
         :loading="isLoading"
         :no-data-text="noDataText"
+        :items-per-page="-1"
         item-key="id"
         class="channels-table h-100"
         density="compact"
+        hide-default-footer
       >
           <!-- Platform column -->
           <template #[`item.platform`]="{ item }">
