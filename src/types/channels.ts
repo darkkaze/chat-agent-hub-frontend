@@ -21,12 +21,14 @@ export interface CreateChannelRequest {
 export interface UpdateChannelRequest {
   name?: string
   api_to_send_message?: string
+  credentials_to_send_message?: Record<string, any>
 }
 
 export interface ChannelResponse extends BaseEntity {
   name: string
   platform: PlatformType
   api_to_send_message?: string
+  credentials_to_send_message?: Record<string, any>
 }
 
 // Chat Types

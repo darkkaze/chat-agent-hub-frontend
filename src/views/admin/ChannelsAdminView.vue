@@ -109,16 +109,10 @@ Ruta: /admin/channels
             </v-chip>
           </template>
 
-          <!-- Created date column -->
-          <template #[`item.created_at`]="{ item }">
-            <span class="text-body-2">
-              {{ formatDate(item.created_at) }}
-            </span>
-          </template>
 
           <!-- Actions column -->
           <template #[`item.actions`]="{ item }">
-            <div class="d-flex gap-1">
+            <div class="d-flex gap-1 justify-center">
               <v-btn
                 icon="mdi-pencil"
                 variant="text"
@@ -210,7 +204,6 @@ const tableHeaders = [
   { title: 'Nombre', key: 'name', sortable: true },
   { title: 'Plataforma', key: 'platform', sortable: true },
   { title: 'Estado', key: 'status', sortable: false },
-  { title: 'Fecha de creación', key: 'created_at', sortable: true },
   { title: 'Acciones', key: 'actions', sortable: false, align: 'center' as const }
 ]
 
@@ -310,19 +303,6 @@ const getPlatformName = (platform: PlatformType) => {
   }
 }
 
-const formatDate = (dateString: string) => {
-  try {
-    return new Date(dateString).toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  } catch {
-    return 'Fecha inválida'
-  }
-}
 
 const showNotification = (message: string, color: 'success' | 'error' = 'success') => {
   snackbarMessage.value = message

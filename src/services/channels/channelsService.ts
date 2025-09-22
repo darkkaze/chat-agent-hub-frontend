@@ -46,6 +46,18 @@ export class ChannelsService {
   async deleteChannel(channelId: string): Promise<ApiMessageResponse> {
     return apiService.delete<ApiMessageResponse>(`/channels/${channelId}`)
   }
+
+  async getChannelCredentials(channelId: string): Promise<{
+    channel_id: string
+    channel_name: string
+    credentials_to_send_message: Record<string, any>
+  }> {
+    return apiService.get<{
+      channel_id: string
+      channel_name: string
+      credentials_to_send_message: Record<string, any>
+    }>(`/channels/${channelId}/credentials`)
+  }
 }
 
 export const channelsService = new ChannelsService()
