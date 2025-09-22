@@ -119,28 +119,24 @@ const router = createRouter({
         }
       ]
     },
-    // Admin routes (placeholders)
+    // Admin routes
     {
-      path: '/admin',
-      component: () => import('@/layouts/ChannelLayout.vue'),
-      meta: { requiresAuth: true },
-      children: [
-        {
-          path: 'channels',
-          name: 'admin-channels',
-          component: () => import('@/views/admin/ChannelsAdminView.vue')
-        },
-        {
-          path: 'users',
-          name: 'admin-users',
-          component: () => import('@/views/admin/UsersAdminView.vue')
-        },
-        {
-          path: 'agents',
-          name: 'admin-agents',
-          component: () => import('@/views/admin/AgentsAdminView.vue')
-        }
-      ]
+      path: '/admin/channels',
+      name: 'admin-channels',
+      component: () => import('@/views/admin/ChannelsAdminView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/admin/users',
+      name: 'admin-users',
+      component: () => import('@/views/admin/UsersAdminView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/admin/agents',
+      name: 'admin-agents',
+      component: () => import('@/views/admin/AgentsAdminView.vue'),
+      meta: { requiresAuth: true }
     },
     // Ruta temporal para Home mientras desarrollamos (protected)
     {
