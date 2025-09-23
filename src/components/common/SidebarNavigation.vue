@@ -74,90 +74,48 @@ Emits: ninguno por ahora
 
       <v-divider />
 
-      <!-- Main Navigation Section -->
+      <!-- Navigation Section -->
       <div class="px-2 py-2">
         <div
-          v-for="(channel, index) in mainNavigation" 
+          v-for="(item, index) in allNavigationItems"
           :key="index"
           class="mb-2 d-flex"
           :class="isCompact && !isMobileOrTabletPortrait ? 'justify-center' : ''"
         >
-          <v-tooltip 
+          <v-tooltip
             v-if="isCompact && !isMobileOrTabletPortrait"
             location="end"
-            :text="channel.name"
+            :text="item.name"
           >
             <template #activator="{ props }">
               <v-btn
                 v-bind="props"
-                :icon="channel.icon"
-                size="40"
-                variant="flat"
-                :color="channel.active ? 'primary' : 'surface-variant'"
-                class="rounded-circle"
-                style="min-width: 40px; width: 40px; height: 40px;"
-                @click="selectChannel(channel)"
-              />
-            </template>
-          </v-tooltip>
-          
-          <v-btn
-            v-else
-            :prepend-icon="channel.icon"
-            variant="flat"
-            :color="channel.active ? 'primary' : 'surface-variant'"
-            class="w-100 justify-start rounded-lg"
-            @click="selectChannel(channel)"
-          >
-            {{ channel.name }}
-            <v-badge 
-              v-if="channel.notifications > 0"
-              :content="channel.notifications"
-              color="error"
-              class="ms-auto"
-            />
-          </v-btn>
-        </div>
-      </div>
-
-      <v-divider />
-
-      <!-- Admin Actions Section -->
-      <div class="px-2 py-2">
-        <div
-          v-for="(action, index) in adminActions" 
-          :key="index"
-          class="mb-2 d-flex"
-          :class="isCompact && !isMobileOrTabletPortrait ? 'justify-center' : ''"
-        >
-          <v-tooltip 
-            v-if="isCompact && !isMobileOrTabletPortrait"
-            location="end"
-            :text="action.name"
-          >
-            <template #activator="{ props }">
-              <v-btn
-                v-bind="props"
-                :icon="action.icon"
+                :icon="item.icon"
                 size="40"
                 variant="text"
                 color="on-surface"
                 class="rounded-circle"
                 style="min-width: 40px; width: 40px; height: 40px;"
-                @click="handleAction(action)"
+                @click="handleNavigation(item)"
               />
             </template>
           </v-tooltip>
-          
+
           <v-btn
             v-else
-            :prepend-icon="action.icon"
+            :prepend-icon="item.icon"
             variant="text"
             color="on-surface"
             class="w-100 justify-start rounded-lg"
-            @click="handleAction(action)"
+            @click="handleNavigation(item)"
           >
-            {{ action.name }}
+            {{ item.name }}
+            <v-badge
+              v-if="item.notifications && item.notifications > 0"
+              :content="item.notifications"
+              color="error"
+              class="ms-auto"
+            />
           </v-btn>
         </div>
       </div>
@@ -294,7 +252,7 @@ const mobileDrawerWidth = computed(() => Math.floor(window.innerWidth * 0.7))
 
 // Navigation sections
 const mainNavigation = ref<Channel[]>([
-  { id: 'all-chats', name: 'Todos los chats', icon: 'mdi-chat-outline', active: true, notifications: 0 },
+  { id: 'all-chats', name: 'Chats', icon: 'mdi-chat-outline', active: true, notifications: 0 },
 ])
 
 const adminActions = ref<Action[]>([
@@ -303,46 +261,48 @@ const adminActions = ref<Action[]>([
   { name: 'Agentes', icon: 'mdi-robot' },
 ])
 
-// Methods
-const selectChannel = (channel: Channel) => {
-  // Reset all navigation items
-  mainNavigation.value.forEach(ch => ch.active = false)
-  // Set selected item as active
-  channel.active = true
+// Combined navigation items
+const allNavigationItems = computed(() => [
+  ...mainNavigation.value,
+  ...adminActions.value
+])
 
+// Methods
+
+const handleNavigation = (item: Channel | Action) => {
   // Close drawer when item is selected on mobile/tablet portrait
   if (isMobileOrTabletPortrait.value) {
     mobileDrawer.value = false
   }
 
-  // Navigate based on channel type
-  if (channel.id === 'all-chats') {
-    // Navigate to unified chats view
-    router.push('/chats')
+  // Check if it's a channel item
+  if ('id' in item) {
+    // Reset all navigation items
+    mainNavigation.value.forEach(ch => ch.active = false)
+    // Set selected item as active
+    item.active = true
+
+    // Navigate based on channel type
+    if (item.id === 'all-chats') {
+      router.push('/chats')
+    } else {
+      router.push(`/channel/${item.id}`)
+    }
   } else {
-    router.push(`/channel/${channel.id}`)
-  }
-}
-
-const handleAction = (action: Action) => {
-  // Close drawer when action is selected on mobile/tablet portrait
-  if (isMobileOrTabletPortrait.value) {
-    mobileDrawer.value = false
-  }
-
-  // Navigate to admin sections (placeholder routes for now)
-  switch (action.name) {
-    case 'Canales':
-      router.push('/admin/channels')
-      break
-    case 'Usuarios':
-      router.push('/admin/users')
-      break
-    case 'Agentes':
-      router.push('/admin/agents')
-      break
-    default:
-      console.log(`Action not implemented: ${action.name}`)
+    // It's an admin action
+    switch (item.name) {
+      case 'Canales':
+        router.push('/admin/channels')
+        break
+      case 'Usuarios':
+        router.push('/admin/users')
+        break
+      case 'Agentes':
+        router.push('/admin/agents')
+        break
+      default:
+        console.log(`Action not implemented: ${item.name}`)
+    }
   }
 }
 
@@ -351,6 +311,9 @@ const openSettings = () => {
   if (isMobileOrTabletPortrait.value) {
     mobileDrawer.value = false
   }
+
+  // Navigate to user configuration
+  router.push('/admin/config')
 }
 
 const toggleCompact = () => {
