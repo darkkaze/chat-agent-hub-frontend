@@ -111,11 +111,53 @@ Emits: ninguno por ahora
           >
             {{ item.name }}
             <v-badge
-              v-if="item.notifications && item.notifications > 0"
+              v-if="'notifications' in item && typeof item.notifications === 'number' && item.notifications > 0"
               :content="item.notifications"
               color="error"
               class="ms-auto"
             />
+          </v-btn>
+        </div>
+      </div>
+
+      <!-- Dynamic Applications Section -->
+      <div v-if="menuStore.menuCount > 0" class="px-2 py-2">
+        <v-divider class="mb-2" />
+
+        <div
+          v-for="(menuItem, index) in menuStore.menus"
+          :key="menuItem.id"
+          class="mb-2 d-flex"
+          :class="isCompact && !isMobileOrTabletPortrait ? 'justify-center' : ''"
+        >
+          <v-tooltip
+            v-if="isCompact && !isMobileOrTabletPortrait"
+            location="end"
+            :text="menuItem.name"
+          >
+            <template #activator="{ props }">
+              <v-btn
+                v-bind="props"
+                :icon="menuItem.icon"
+                size="40"
+                variant="text"
+                color="on-surface"
+                class="rounded-circle"
+                style="min-width: 40px; width: 40px; height: 40px;"
+                @click="navigateToExternalApp(menuItem.url)"
+              />
+            </template>
+          </v-tooltip>
+
+          <v-btn
+            v-else
+            :prepend-icon="menuItem.icon"
+            variant="text"
+            color="on-surface"
+            class="w-100 justify-start rounded-lg"
+            @click="navigateToExternalApp(menuItem.url)"
+          >
+            {{ menuItem.name }}
           </v-btn>
         </div>
       </div>
@@ -215,6 +257,8 @@ Emits: ninguno por ahora
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useMenuStore } from '@/stores/menu'
+import { useAuthStore } from '@/stores/auth'
 
 // Types
 interface Channel {
@@ -232,6 +276,10 @@ interface Action {
 
 // Composables
 const router = useRouter()
+
+// Stores
+const menuStore = useMenuStore()
+const authStore = useAuthStore()
 
 // Reactive screen width
 const screenWidth = ref(window.innerWidth)
@@ -320,6 +368,45 @@ const toggleCompact = () => {
   isCompact.value = !isCompact.value
 }
 
+// Dynamic menu methods
+const navigateToExternalApp = (url: string) => {
+  // Close drawer when item is selected on mobile/tablet portrait
+  if (isMobileOrTabletPortrait.value) {
+    mobileDrawer.value = false
+  }
+
+  // Validar y navegar a la URL externa
+  if (url.startsWith('/')) {
+    // URL relativa - navegar en la misma ventana
+    window.location.href = url
+  } else {
+    console.warn('Invalid menu URL:', url)
+  }
+}
+
+const extractAppName = (url: string): string => {
+  // Extraer nombre de la aplicación desde la URL
+  // Ej: /analytics -> Analytics, /reports -> Reports
+  const path = url.startsWith('/') ? url.slice(1) : url
+  const segments = path.split('/')
+  const appName = segments[0] || 'App'
+
+  // Capitalizar primera letra
+  return appName.charAt(0).toUpperCase() + appName.slice(1)
+}
+
+// Initialize dynamic menus when component mounts
+const initializeDynamicMenus = async () => {
+  const user = authStore.user
+  if (user?.id) {
+    try {
+      await menuStore.initializeMenus(user.id)
+    } catch (err) {
+      console.error('Error initializing dynamic menus:', err)
+    }
+  }
+}
+
 // Methods for drawer state
 const updateDrawerState = (value: boolean) => {
   if (isMobileOrTabletPortrait.value) {
@@ -345,10 +432,23 @@ watch(isMobileOrTabletPortrait, (newIsMobile) => {
   }
 })
 
+// Watch for auth changes to initialize menus
+watch(() => authStore.user, (newUser) => {
+  if (newUser?.id) {
+    initializeDynamicMenus()
+  } else {
+    // Clear menus when user logs out
+    menuStore.clearUserData()
+  }
+})
+
 // Lifecycle
 onMounted(() => {
   // Add resize listener
   window.addEventListener('resize', handleResize)
+
+  // Initialize dynamic menus if user is already loaded
+  initializeDynamicMenus()
   
   // Set initial drawer state based on screen size
   drawer.value = !isMobileOrTabletPortrait.value
@@ -372,6 +472,8 @@ onUnmounted(() => {
 .v-navigation-drawer--rail {
   --v-navigation-drawer-width: 64px !important;
 }
+
+/* Dynamic applications styles - no custom styles needed for MDI icons */
 
 .v-btn {
   transition: all 0.2s ease-in-out;

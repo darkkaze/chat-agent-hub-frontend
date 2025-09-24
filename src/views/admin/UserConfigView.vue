@@ -1,178 +1,204 @@
 <!--
 User Config View
 
-Vista de configuración personal del usuario
-- Cambiar nombre de usuario
-- Cambiar contraseña
-- Información básica del perfil
+Vista de configuración con tabs:
+- Tab 1: Configuración personal del usuario (cambiar username/password)
+- Tab 2: Gestión de menús del sistema (solo ADMIN)
 
 Ruta: /admin/config
 -->
 
 <template>
   <div class="admin-view d-flex flex-column h-100">
+    <!-- Tab Navigation -->
+    <div class="px-4 py-3 border-b">
+      <v-btn-toggle
+        v-model="activeTab"
+        variant="outlined"
+        divided
+        mandatory
+      >
+        <v-btn value="profile" prepend-icon="mdi-account-cog">
+          Perfil Usuario
+        </v-btn>
+        <v-btn v-if="isAdmin" value="menu" prepend-icon="mdi-menu">
+          Gestión de Menús
+        </v-btn>
+      </v-btn-toggle>
+    </div>
+
     <!-- Header -->
-    <div class="admin-header px-4 py-3 border-b d-flex align-center">
+    <div class="admin-header px-4 py-3 border-b d-flex align-center justify-space-between">
       <div>
         <h1 class="text-subtitle-1 font-weight-medium mb-1">
-          Configuración de Usuario
+          {{ activeTab === 'profile' ? 'Configuración Personal' : 'Gestión de Menús' }}
         </h1>
         <p class="text-caption text-on-surface-variant">
-          Administra tu información personal y preferencias
+          {{ activeTab === 'profile' ? 'Administra tu información personal y preferencias' : 'Administra los elementos de menú del sistema' }}
         </p>
       </div>
+
+      <v-btn
+        v-if="activeTab === 'menu'"
+        color="primary"
+        prepend-icon="mdi-plus"
+        size="small"
+        @click="openCreateMenuDialog"
+      >
+        Nuevo Menú
+      </v-btn>
     </div>
 
     <!-- Content -->
-    <div class="admin-content flex-1-1 overflow-y-auto pa-6">
-      <v-row justify="center">
-        <v-col cols="12" sm="10" md="8" lg="7" xl="6">
-          <v-card
-            class="pa-8 elevation-4 rounded-xl"
-            color="surface"
-          >
-            <!-- Header -->
-            <div class="text-center mb-6">
-              <v-avatar size="64" color="primary" class="mb-4">
-                <v-icon size="32" color="white">mdi-account-cog</v-icon>
-              </v-avatar>
-              <h1 class="text-h5 text-on-surface font-weight-bold mb-2">
-                Configuración Personal
-              </h1>
-            </div>
-
-            <!-- Change Username Section -->
-            <v-form ref="usernameFormRef" v-model="isUsernameFormValid" @submit.prevent="handleUsernameChange">
-              <h3 class="text-h6 text-on-surface font-weight-medium mb-4">
+    <div class="admin-content flex-1-1 overflow-hidden">
+      <!-- Tab 1: Perfil Usuario -->
+      <div v-if="activeTab === 'profile'" class="h-100 overflow-y-auto pa-4">
+        <v-row>
+          <v-col cols="12" lg="8" xl="6">
+            <v-card class="mb-4">
+              <v-card-title class="pb-0">
                 <v-icon start color="primary">mdi-account-edit</v-icon>
                 Cambiar Nombre de Usuario
-              </h3>
+              </v-card-title>
 
-              <v-text-field
-                v-model="usernameForm.username"
-                label="Nuevo nombre de usuario"
-                placeholder="Ej: juan.perez"
-                variant="outlined"
-                prepend-inner-icon="mdi-account"
-                :rules="usernameRules"
-                required
-                class="mb-4"
-                hint="Identificador único que usarás para iniciar sesión"
-              />
+              <v-card-text>
+                <v-form ref="usernameFormRef" v-model="isUsernameFormValid" @submit.prevent="handleUsernameChange">
 
-              <!-- Username Error -->
-              <v-alert
-                v-if="usernameError"
-                type="error"
-                variant="tonal"
-                class="mb-4"
-                :text="usernameError"
-              />
+                    <v-text-field
+                      v-model="usernameForm.username"
+                      label="Nuevo nombre de usuario"
+                      placeholder="Ej: juan.perez"
+                      variant="outlined"
+                      prepend-inner-icon="mdi-account"
+                      :rules="usernameRules"
+                      required
+                      class="mb-4"
+                      hint="Identificador único que usarás para iniciar sesión"
+                    />
 
-              <!-- Username Actions -->
-              <div class="d-flex gap-3 mb-6">
-                <v-btn
-                  variant="outlined"
-                  @click="resetUsernameForm"
-                  :disabled="isUsernameLoading"
-                >
-                  Cancelar
-                </v-btn>
-                <v-btn
-                  type="submit"
-                  color="primary"
-                  :loading="isUsernameLoading"
-                  :disabled="!isUsernameFormValid || !hasUsernameChanged"
-                >
-                  Guardar Cambios
-                  <v-icon end>mdi-check</v-icon>
-                </v-btn>
-              </div>
-            </v-form>
+                    <!-- Username Error -->
+                    <v-alert
+                      v-if="usernameError"
+                      type="error"
+                      variant="tonal"
+                      class="mb-4"
+                      :text="usernameError"
+                    />
 
-            <v-divider class="my-6" />
+                  <!-- Username Actions -->
+                  <div class="d-flex gap-3">
+                    <v-btn
+                      variant="outlined"
+                      @click="resetUsernameForm"
+                      :disabled="isUsernameLoading"
+                    >
+                      Cancelar
+                    </v-btn>
+                    <v-btn
+                      type="submit"
+                      color="primary"
+                      :loading="isUsernameLoading"
+                      :disabled="!isUsernameFormValid || !hasUsernameChanged"
+                    >
+                      Guardar Cambios
+                      <v-icon end>mdi-check</v-icon>
+                    </v-btn>
+                  </div>
+                </v-form>
+              </v-card-text>
+            </v-card>
 
             <!-- Change Password Section -->
-            <v-form ref="passwordFormRef" v-model="isPasswordFormValid" @submit.prevent="handlePasswordChange">
-              <h3 class="text-h6 text-on-surface font-weight-medium mb-4">
+            <v-card>
+              <v-card-title class="pb-0">
                 <v-icon start color="primary">mdi-lock-reset</v-icon>
                 Cambiar Contraseña
-              </h3>
+              </v-card-title>
 
-              <v-text-field
-                v-model="passwordForm.password"
-                label="Nueva contraseña"
-                :type="showPassword ? 'text' : 'password'"
-                variant="outlined"
-                prepend-inner-icon="mdi-lock"
-                :rules="passwordRules"
-                required
-                class="mb-4"
-                hint="Mínimo 6 caracteres"
-              >
-                <template #append-inner>
-                  <v-btn
-                    :icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
-                    variant="text"
-                    size="small"
-                    @click="showPassword = !showPassword"
-                  />
-                </template>
-              </v-text-field>
+              <v-card-text>
+                <v-form ref="passwordFormRef" v-model="isPasswordFormValid" @submit.prevent="handlePasswordChange">
 
-              <v-text-field
-                v-model="passwordForm.confirmPassword"
-                label="Confirmar contraseña"
-                :type="showConfirmPassword ? 'text' : 'password'"
-                variant="outlined"
-                prepend-inner-icon="mdi-lock-check"
-                :rules="confirmPasswordRules"
-                required
-                class="mb-4"
-                hint="Repite la nueva contraseña"
-              >
-                <template #append-inner>
-                  <v-btn
-                    :icon="showConfirmPassword ? 'mdi-eye-off' : 'mdi-eye'"
-                    variant="text"
-                    size="small"
-                    @click="showConfirmPassword = !showConfirmPassword"
-                  />
-                </template>
-              </v-text-field>
+                    <v-text-field
+                      v-model="passwordForm.password"
+                      label="Nueva contraseña"
+                      :type="showPassword ? 'text' : 'password'"
+                      variant="outlined"
+                      prepend-inner-icon="mdi-lock"
+                      :rules="passwordRules"
+                      required
+                      class="mb-4"
+                      hint="Mínimo 6 caracteres"
+                    >
+                      <template #append-inner>
+                        <v-btn
+                          :icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+                          variant="text"
+                          size="small"
+                          @click="showPassword = !showPassword"
+                        />
+                      </template>
+                    </v-text-field>
 
-              <!-- Password Error -->
-              <v-alert
-                v-if="passwordError"
-                type="error"
-                variant="tonal"
-                class="mb-4"
-                :text="passwordError"
-              />
+                    <v-text-field
+                      v-model="passwordForm.confirmPassword"
+                      label="Confirmar contraseña"
+                      :type="showConfirmPassword ? 'text' : 'password'"
+                      variant="outlined"
+                      prepend-inner-icon="mdi-lock-check"
+                      :rules="confirmPasswordRules"
+                      required
+                      class="mb-4"
+                      hint="Repite la nueva contraseña"
+                    >
+                      <template #append-inner>
+                        <v-btn
+                          :icon="showConfirmPassword ? 'mdi-eye-off' : 'mdi-eye'"
+                          variant="text"
+                          size="small"
+                          @click="showConfirmPassword = !showConfirmPassword"
+                        />
+                      </template>
+                    </v-text-field>
 
-              <!-- Password Actions -->
-              <div class="d-flex gap-3">
-                <v-btn
-                  variant="outlined"
-                  @click="resetPasswordForm"
-                  :disabled="isPasswordLoading"
-                >
-                  Cancelar
-                </v-btn>
-                <v-btn
-                  type="submit"
-                  color="primary"
-                  :loading="isPasswordLoading"
-                  :disabled="!isPasswordFormValid"
-                >
-                  Cambiar Contraseña
-                  <v-icon end>mdi-check</v-icon>
-                </v-btn>
-              </div>
-            </v-form>
-          </v-card>
-        </v-col>
-      </v-row>
+                    <!-- Password Error -->
+                    <v-alert
+                      v-if="passwordError"
+                      type="error"
+                      variant="tonal"
+                      class="mb-4"
+                      :text="passwordError"
+                    />
+
+                  <!-- Password Actions -->
+                  <div class="d-flex gap-3">
+                    <v-btn
+                      variant="outlined"
+                      @click="resetPasswordForm"
+                      :disabled="isPasswordLoading"
+                    >
+                      Cancelar
+                    </v-btn>
+                    <v-btn
+                      type="submit"
+                      color="primary"
+                      :loading="isPasswordLoading"
+                      :disabled="!isPasswordFormValid"
+                    >
+                      Cambiar Contraseña
+                      <v-icon end>mdi-check</v-icon>
+                    </v-btn>
+                  </div>
+                </v-form>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
+      </div>
+
+      <!-- Tab 2: Gestión de Menús (Solo ADMIN) -->
+      <div v-if="activeTab === 'menu'" class="h-100">
+        <MenuManager ref="menuManagerRef" />
+      </div>
     </div>
 
     <!-- Success/Error Snackbar -->
@@ -200,12 +226,21 @@ import { ref, computed, reactive, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { authService } from '@/services/auth/authService'
 import { UserRole } from '@/types/auth'
+import MenuManager from '@/components/menu/MenuManager.vue'
 
 // Stores
 const authStore = useAuthStore()
 
 // State
 const currentUser = computed(() => authStore.user)
+const activeTab = ref('profile')
+
+// Computed
+const isAdmin = computed(() => {
+  const userRole = currentUser.value?.role?.toLowerCase()
+  const adminRole = UserRole.ADMIN.toLowerCase()
+  return userRole === adminRole
+})
 
 // Username form
 const usernameFormRef = ref()
@@ -353,6 +388,16 @@ const handlePasswordChange = async () => {
   }
 }
 
+// Menu manager ref
+const menuManagerRef = ref()
+
+// Methods for menu integration
+const openCreateMenuDialog = () => {
+  if (menuManagerRef.value) {
+    menuManagerRef.value.openCreateDialog()
+  }
+}
+
 // Initialize forms
 onMounted(() => {
   resetUsernameForm()
@@ -382,4 +427,5 @@ onMounted(() => {
 .border-t {
   border-top: 1px solid rgba(var(--v-theme-on-surface), 0.12);
 }
+
 </style>

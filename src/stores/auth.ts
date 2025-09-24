@@ -36,11 +36,44 @@ export const useAuthStore = defineStore('auth', () => {
     }))
   }
 
-  const clearUser = () => {
+  // Initialize user session (load menus, etc.)
+  const initializeUserSession = async (userData: UserResponse) => {
+    setUser(userData)
+
+    // Load dynamic menus for sidebar
+    try {
+      // Dynamic import to avoid circular dependency
+      const { useMenuStore } = await import('@/stores/menu')
+      const menuStore = useMenuStore()
+      await menuStore.initializeMenus(userData.id)
+
+      console.log('User session initialized with dynamic menus')
+    } catch (err) {
+      console.error('Error initializing user session menus:', err)
+      // Don't block login if menu loading fails
+    }
+  }
+
+  const clearUser = async () => {
+    const userId = user.value?.id
+
     user.value = null
     localStorage.removeItem('user_data')
     localStorage.removeItem('last_visited_channel')
     apiService.clearToken()
+
+    // Clear menu cache
+    if (userId) {
+      try {
+        const { useMenuStore } = await import('@/stores/menu')
+        const menuStore = useMenuStore()
+        menuStore.clearUserData(userId)
+
+        console.log('User session cleared including menus')
+      } catch (err) {
+        console.error('Error clearing menu cache:', err)
+      }
+    }
   }
 
   const setLastVisitedChannel = (channelId: string) => {
@@ -119,6 +152,7 @@ export const useAuthStore = defineStore('auth', () => {
     
     // Actions
     setUser,
+    initializeUserSession,
     clearUser,
     setLastVisitedChannel,
     getLastVisitedChannel,
