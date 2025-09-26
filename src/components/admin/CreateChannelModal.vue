@@ -127,7 +127,7 @@ Emits: @update:modelValue, @created
                           density="compact"
                           :type="credential.visible ? 'text' : 'password'"
                           :placeholder="getTwilioPlaceholder(credential.key)"
-                          :rules="credentialRules[credential.key] || []"
+                          :rules="getCredentialRules(credential.key)"
                         />
                       </v-col>
                       <v-col cols="1" class="d-flex align-center">
@@ -263,6 +263,12 @@ const credentialRules = computed(() => {
   }
   return {}
 })
+
+// Helper function to safely get credential rules
+const getCredentialRules = (key: string) => {
+  const rules = credentialRules.value as Record<string, any>
+  return rules[key] || []
+}
 
 const platformRules = [
   (v: string) => !!v || 'La plataforma es requerida'
