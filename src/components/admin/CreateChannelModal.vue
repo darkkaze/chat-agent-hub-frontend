@@ -241,6 +241,7 @@ const credentials = ref<Array<{ key: string; value: string; visible: boolean }>>
 const platformOptions = [
   { title: 'WhatsApp', value: PlatformType.WHATSAPP },
   { title: 'WhatsApp Twilio', value: PlatformType.WHATSAPP_TWILIO },
+  { title: 'WhatsApp WHAPI', value: PlatformType.WHAPI },
   { title: 'Telegram', value: PlatformType.TELEGRAM },
   { title: 'Instagram', value: PlatformType.INSTAGRAM }
 ]
@@ -283,9 +284,14 @@ const isTwilioPlatform = computed(() => {
   return formData.value.platform === PlatformType.WHATSAPP_TWILIO
 })
 
+const isWhapiPlatform = computed(() => {
+  return formData.value.platform === PlatformType.WHAPI
+})
+
 const isWhatsAppPlatform = computed(() => {
   return formData.value.platform === PlatformType.WHATSAPP ||
-         formData.value.platform === PlatformType.WHATSAPP_TWILIO
+         formData.value.platform === PlatformType.WHATSAPP_TWILIO ||
+         formData.value.platform === PlatformType.WHAPI
 })
 
 // Methods
@@ -302,6 +308,7 @@ const getPlatformIcon = (platform: PlatformType) => {
   switch (platform) {
     case PlatformType.WHATSAPP:
     case PlatformType.WHATSAPP_TWILIO:
+    case PlatformType.WHAPI:
       return 'mdi-whatsapp'
     case PlatformType.TELEGRAM:
       return 'mdi-telegram'
@@ -316,6 +323,7 @@ const getPlatformColor = (platform: PlatformType) => {
   switch (platform) {
     case PlatformType.WHATSAPP:
     case PlatformType.WHATSAPP_TWILIO:
+    case PlatformType.WHAPI:
       return 'success'
     case PlatformType.TELEGRAM:
       return 'info'

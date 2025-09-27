@@ -91,14 +91,11 @@ Vista para crear el primer canal durante el onboarding
             >
               <v-card-title class="text-body-1 py-3">
                 <v-icon start>mdi-key</v-icon>
-                {{ isTwilioPlatform ? 'Credenciales de Twilio (requeridas)' : 'Credenciales (opcional)' }}
+                {{ getCredentialsTitle() }}
               </v-card-title>
               <v-card-text>
                 <p class="text-body-2 text-on-surface-variant mb-4">
-                  {{ isTwilioPlatform
-                    ? 'Configura las credenciales de tu cuenta de Twilio para WhatsApp Business API.'
-                    : 'Define credenciales para autenticación. Si tu API requiere un token, agrégalo aquí como "token".'
-                  }}
+                  {{ getCredentialsDescription() }}
                 </p>
                 
                 <div v-for="(credential, index) in credentials" :key="index" class="mb-3">
@@ -109,8 +106,8 @@ Vista para crear el primer canal durante el onboarding
                         label="Clave"
                         variant="outlined"
                         density="compact"
-                        :readonly="isTwilioPlatform"
-                        :placeholder="isTwilioPlatform ? '' : 'token'"
+                        :readonly="isTwilioPlatform || isWhapiPlatform"
+                        :placeholder="getKeyPlaceholder()"
                       />
                     </v-col>
                     <v-col cols="6">
@@ -120,7 +117,7 @@ Vista para crear el primer canal durante el onboarding
                         variant="outlined"
                         density="compact"
                         :type="credential.key === 'token' ? 'password' : 'text'"
-                        :placeholder="getTwilioPlaceholder(credential.key)"
+                        :placeholder="getValuePlaceholder(credential.key)"
                       />
                     </v-col>
                     <v-col cols="1" class="d-flex align-center">
@@ -129,7 +126,7 @@ Vista para crear el primer canal durante el onboarding
                         size="small"
                         variant="text"
                         color="error"
-                        :disabled="isTwilioPlatform"
+                        :disabled="isTwilioPlatform || isWhapiPlatform"
                         @click="removeCredential(index)"
                       />
                     </v-col>
@@ -137,7 +134,7 @@ Vista para crear el primer canal durante el onboarding
                 </div>
 
                 <v-btn
-                  v-if="!isTwilioPlatform"
+                  v-if="!isTwilioPlatform && !isWhapiPlatform"
                   variant="outlined"
                   prepend-icon="mdi-plus"
                   @click="addCredential"
@@ -233,6 +230,7 @@ const getPlatformLabel = (platform: string): string => {
   const labels: Record<string, string> = {
     'WHATSAPP': 'WhatsApp',
     'WHATSAPP_TWILIO': 'WhatsApp (Twilio)',
+    'WHAPI': 'WhatsApp (WHAPI)',
     'TELEGRAM': 'Telegram',
     'INSTAGRAM': 'Instagram'
   }
@@ -241,6 +239,9 @@ const getPlatformLabel = (platform: string): string => {
 
 // Check if current platform is Twilio
 const isTwilioPlatform = computed(() => channelData.platform === 'WHATSAPP_TWILIO')
+
+// Check if current platform is WHAPI
+const isWhapiPlatform = computed(() => channelData.platform === 'WHAPI')
 
 // Validation rules
 const nameRules = [
@@ -271,19 +272,54 @@ const initializeTwilioCredentials = () => {
   ]
 }
 
-// Get placeholder text for Twilio fields
-const getTwilioPlaceholder = (key: string): string => {
-  if (!isTwilioPlatform.value) {
-    return key === 'token' ? 'tu_token_aqui' : 'valor'
-  }
+// Initialize WHAPI credentials with only token
+const initializeWhapiCredentials = () => {
+  credentials.value = [
+    { key: 'token', value: '' }
+  ]
+}
 
-  const twilioPlaceholders: Record<string, string> = {
-    'from_number': '+1234567890',
-    'user': 'tu_account_sid',
-    'token': 'tu_auth_token'
+// Get credentials title based on platform
+const getCredentialsTitle = (): string => {
+  if (isTwilioPlatform.value) {
+    return 'Credenciales de Twilio (requeridas)'
+  } else if (isWhapiPlatform.value) {
+    return 'Credenciales de WHAPI (requeridas)'
   }
+  return 'Credenciales (opcional)'
+}
 
-  return twilioPlaceholders[key] || 'valor'
+// Get credentials description based on platform
+const getCredentialsDescription = (): string => {
+  if (isTwilioPlatform.value) {
+    return 'Configura las credenciales de tu cuenta de Twilio para WhatsApp Business API.'
+  } else if (isWhapiPlatform.value) {
+    return 'Configura tu token de WHAPI para enviar mensajes de WhatsApp.'
+  }
+  return 'Define credenciales para autenticación. Si tu API requiere un token, agrégalo aquí como "token".'
+}
+
+// Get placeholder for key field
+const getKeyPlaceholder = (): string => {
+  if (isTwilioPlatform.value || isWhapiPlatform.value) {
+    return ''
+  }
+  return 'token'
+}
+
+// Get placeholder text for value field based on platform and key
+const getValuePlaceholder = (key: string): string => {
+  if (isTwilioPlatform.value) {
+    const twilioPlaceholders: Record<string, string> = {
+      'from_number': '+1234567890',
+      'user': 'tu_account_sid',
+      'token': 'tu_auth_token'
+    }
+    return twilioPlaceholders[key] || 'valor'
+  } else if (isWhapiPlatform.value) {
+    return key === 'token' ? 'tu_token_whapi_aqui' : 'valor'
+  }
+  return key === 'token' ? 'tu_token_aqui' : 'valor'
 }
 
 // Convert credentials to object
@@ -349,7 +385,7 @@ const loadPlatforms = async () => {
     console.error('Error loading platforms:', err)
 
     // Fallback to hardcoded platforms
-    availablePlatforms.value = ['WHATSAPP', 'WHATSAPP_TWILIO', 'TELEGRAM', 'INSTAGRAM']
+    availablePlatforms.value = ['WHATSAPP', 'WHATSAPP_TWILIO', 'WHAPI', 'TELEGRAM', 'INSTAGRAM']
     channelData.platform = PlatformType.WHATSAPP
   } finally {
     isLoadingPlatforms.value = false
@@ -360,6 +396,8 @@ const loadPlatforms = async () => {
 watch(() => channelData.platform, (newPlatform) => {
   if (newPlatform === 'WHATSAPP_TWILIO') {
     initializeTwilioCredentials()
+  } else if (newPlatform === 'WHAPI') {
+    initializeWhapiCredentials()
   }
 })
 

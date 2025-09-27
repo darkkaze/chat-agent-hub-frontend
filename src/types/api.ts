@@ -28,6 +28,7 @@ export interface ApiMessageResponse {
 export enum PlatformType {
   WHATSAPP = 'WHATSAPP',
   WHATSAPP_TWILIO = 'WHATSAPP_TWILIO',
+  WHAPI = 'WHAPI',
   TELEGRAM = 'TELEGRAM',
   INSTAGRAM = 'INSTAGRAM'
 }
