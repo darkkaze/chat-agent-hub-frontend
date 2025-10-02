@@ -95,14 +95,11 @@ Emits: @update:modelValue, @updated
               <v-card variant="outlined">
                 <v-card-title class="text-body-1 py-3">
                   <v-icon start>mdi-key</v-icon>
-                  {{ isTwilioPlatform ? 'Credenciales de Twilio (requeridas)' : 'Credenciales (opcional)' }}
+                  {{ getCredentialsTitle() }}
                 </v-card-title>
                 <v-card-text>
                   <p class="text-body-2 text-on-surface-variant mb-4">
-                    {{ isTwilioPlatform
-                      ? 'Configura las credenciales de tu cuenta de Twilio para WhatsApp Business API.'
-                      : 'Define credenciales para autenticación. Si tu API requiere un token, agrégalo aquí como "token".'
-                    }}
+                    {{ getCredentialsDescription() }}
                   </p>
 
                   <div v-for="(credential, index) in credentials" :key="index" class="mb-3">
@@ -279,6 +276,14 @@ const isTwilioPlatform = computed(() => {
   return props.channel?.platform === PlatformType.WHATSAPP_TWILIO
 })
 
+const isWhapiPlatform = computed(() => {
+  return props.channel?.platform === PlatformType.WHAPI
+})
+
+const isTelegramPlatform = computed(() => {
+  return props.channel?.platform === PlatformType.TELEGRAM
+})
+
 // Platform-specific credential validation
 const credentialRules = computed(() => {
   if (isTwilioPlatform.value) {
@@ -330,6 +335,7 @@ const getPlatformIcon = (platform?: PlatformType) => {
   switch (platform) {
     case PlatformType.WHATSAPP:
     case PlatformType.WHATSAPP_TWILIO:
+    case PlatformType.WHAPI:
       return 'mdi-whatsapp'
     case PlatformType.TELEGRAM:
       return 'mdi-telegram'
@@ -346,6 +352,7 @@ const getPlatformColor = (platform?: PlatformType) => {
   switch (platform) {
     case PlatformType.WHATSAPP:
     case PlatformType.WHATSAPP_TWILIO:
+    case PlatformType.WHAPI:
       return 'success'
     case PlatformType.TELEGRAM:
       return 'info'
@@ -364,6 +371,8 @@ const getPlatformName = (platform?: PlatformType) => {
       return 'WhatsApp'
     case PlatformType.WHATSAPP_TWILIO:
       return 'WhatsApp Twilio'
+    case PlatformType.WHAPI:
+      return 'WhatsApp WHAPI'
     case PlatformType.TELEGRAM:
       return 'Telegram'
     case PlatformType.INSTAGRAM:
@@ -386,19 +395,45 @@ const toggleCredentialVisibility = (index: number) => {
   credentials.value[index].visible = !credentials.value[index].visible
 }
 
+// Get credentials title based on platform
+const getCredentialsTitle = (): string => {
+  if (isTwilioPlatform.value) {
+    return 'Credenciales de Twilio (requeridas)'
+  } else if (isWhapiPlatform.value) {
+    return 'Credenciales de WHAPI (requeridas)'
+  } else if (isTelegramPlatform.value) {
+    return 'Credenciales de Telegram (requeridas)'
+  }
+  return 'Credenciales (opcional)'
+}
+
+// Get credentials description based on platform
+const getCredentialsDescription = (): string => {
+  if (isTwilioPlatform.value) {
+    return 'Configura las credenciales de tu cuenta de Twilio para WhatsApp Business API.'
+  } else if (isWhapiPlatform.value) {
+    return 'Configura tu token de WHAPI para enviar mensajes de WhatsApp.'
+  } else if (isTelegramPlatform.value) {
+    return 'Configura el token de tu bot de Telegram. Obtenlo hablando con @BotFather en Telegram.'
+  }
+  return 'Define credenciales para autenticación. Si tu API requiere un token, agrégalo aquí como "token".'
+}
+
 // Get placeholder text for Twilio fields
 const getTwilioPlaceholder = (key: string): string => {
-  if (!isTwilioPlatform.value) {
-    return key === 'token' ? 'tu_token_aqui' : 'valor'
+  if (isTwilioPlatform.value) {
+    const twilioPlaceholders: Record<string, string> = {
+      'from_number': '+1234567890',
+      'user': 'tu_account_sid',
+      'token': 'tu_auth_token'
+    }
+    return twilioPlaceholders[key] || 'valor'
+  } else if (isWhapiPlatform.value) {
+    return key === 'token' ? 'tu_token_whapi_aqui' : 'valor'
+  } else if (isTelegramPlatform.value) {
+    return key === 'token' ? '1234567890:ABCdefGHIjklMNOpqrsTUVwxyz' : 'valor'
   }
-
-  const twilioPlaceholders: Record<string, string> = {
-    'from_number': '+1234567890',
-    'user': 'tu_account_sid',
-    'token': 'tu_auth_token'
-  }
-
-  return twilioPlaceholders[key] || 'valor'
+  return key === 'token' ? 'tu_token_aqui' : 'valor'
 }
 
 const getStatusDescription = () => {

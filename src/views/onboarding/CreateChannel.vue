@@ -106,7 +106,7 @@ Vista para crear el primer canal durante el onboarding
                         label="Clave"
                         variant="outlined"
                         density="compact"
-                        :readonly="isTwilioPlatform || isWhapiPlatform"
+                        :readonly="isTwilioPlatform || isWhapiPlatform || isTelegramPlatform"
                         :placeholder="getKeyPlaceholder()"
                       />
                     </v-col>
@@ -126,7 +126,7 @@ Vista para crear el primer canal durante el onboarding
                         size="small"
                         variant="text"
                         color="error"
-                        :disabled="isTwilioPlatform || isWhapiPlatform"
+                        :disabled="isTwilioPlatform || isWhapiPlatform || isTelegramPlatform"
                         @click="removeCredential(index)"
                       />
                     </v-col>
@@ -134,7 +134,7 @@ Vista para crear el primer canal durante el onboarding
                 </div>
 
                 <v-btn
-                  v-if="!isTwilioPlatform && !isWhapiPlatform"
+                  v-if="!isTwilioPlatform && !isWhapiPlatform && !isTelegramPlatform"
                   variant="outlined"
                   prepend-icon="mdi-plus"
                   @click="addCredential"
@@ -243,6 +243,9 @@ const isTwilioPlatform = computed(() => channelData.platform === 'WHATSAPP_TWILI
 // Check if current platform is WHAPI
 const isWhapiPlatform = computed(() => channelData.platform === 'WHAPI')
 
+// Check if current platform is Telegram
+const isTelegramPlatform = computed(() => channelData.platform === 'TELEGRAM')
+
 // Validation rules
 const nameRules = [
   (v: string) => !!v || 'El nombre del canal es requerido',
@@ -279,12 +282,21 @@ const initializeWhapiCredentials = () => {
   ]
 }
 
+// Initialize Telegram credentials with only token
+const initializeTelegramCredentials = () => {
+  credentials.value = [
+    { key: 'token', value: '' }
+  ]
+}
+
 // Get credentials title based on platform
 const getCredentialsTitle = (): string => {
   if (isTwilioPlatform.value) {
     return 'Credenciales de Twilio (requeridas)'
   } else if (isWhapiPlatform.value) {
     return 'Credenciales de WHAPI (requeridas)'
+  } else if (isTelegramPlatform.value) {
+    return 'Credenciales de Telegram (requeridas)'
   }
   return 'Credenciales (opcional)'
 }
@@ -295,13 +307,15 @@ const getCredentialsDescription = (): string => {
     return 'Configura las credenciales de tu cuenta de Twilio para WhatsApp Business API.'
   } else if (isWhapiPlatform.value) {
     return 'Configura tu token de WHAPI para enviar mensajes de WhatsApp.'
+  } else if (isTelegramPlatform.value) {
+    return 'Configura el token de tu bot de Telegram. Obtenlo hablando con @BotFather en Telegram.'
   }
   return 'Define credenciales para autenticación. Si tu API requiere un token, agrégalo aquí como "token".'
 }
 
 // Get placeholder for key field
 const getKeyPlaceholder = (): string => {
-  if (isTwilioPlatform.value || isWhapiPlatform.value) {
+  if (isTwilioPlatform.value || isWhapiPlatform.value || isTelegramPlatform.value) {
     return ''
   }
   return 'token'
@@ -318,6 +332,8 @@ const getValuePlaceholder = (key: string): string => {
     return twilioPlaceholders[key] || 'valor'
   } else if (isWhapiPlatform.value) {
     return key === 'token' ? 'tu_token_whapi_aqui' : 'valor'
+  } else if (isTelegramPlatform.value) {
+    return key === 'token' ? '1234567890:ABCdefGHIjklMNOpqrsTUVwxyz' : 'valor'
   }
   return key === 'token' ? 'tu_token_aqui' : 'valor'
 }
@@ -398,6 +414,8 @@ watch(() => channelData.platform, (newPlatform) => {
     initializeTwilioCredentials()
   } else if (newPlatform === 'WHAPI') {
     initializeWhapiCredentials()
+  } else if (newPlatform === 'TELEGRAM') {
+    initializeTelegramCredentials()
   }
 })
 

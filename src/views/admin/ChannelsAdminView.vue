@@ -210,6 +210,7 @@ const tableHeaders = [
 const platformOptions = [
   { title: 'WhatsApp', value: PlatformType.WHATSAPP },
   { title: 'WhatsApp Twilio', value: PlatformType.WHATSAPP_TWILIO },
+  { title: 'WhatsApp WHAPI', value: PlatformType.WHAPI },
   { title: 'Telegram', value: PlatformType.TELEGRAM },
   { title: 'Instagram', value: PlatformType.INSTAGRAM }
 ]
@@ -264,6 +265,7 @@ const getPlatformIcon = (platform: PlatformType) => {
   switch (platform) {
     case PlatformType.WHATSAPP:
     case PlatformType.WHATSAPP_TWILIO:
+    case PlatformType.WHAPI:
       return 'mdi-whatsapp'
     case PlatformType.TELEGRAM:
       return 'mdi-telegram'
@@ -278,6 +280,7 @@ const getPlatformColor = (platform: PlatformType) => {
   switch (platform) {
     case PlatformType.WHATSAPP:
     case PlatformType.WHATSAPP_TWILIO:
+    case PlatformType.WHAPI:
       return 'success'
     case PlatformType.TELEGRAM:
       return 'info'
@@ -294,6 +297,8 @@ const getPlatformName = (platform: PlatformType) => {
       return 'WhatsApp'
     case PlatformType.WHATSAPP_TWILIO:
       return 'WhatsApp Twilio'
+    case PlatformType.WHAPI:
+      return 'WhatsApp WHAPI'
     case PlatformType.TELEGRAM:
       return 'Telegram'
     case PlatformType.INSTAGRAM:
