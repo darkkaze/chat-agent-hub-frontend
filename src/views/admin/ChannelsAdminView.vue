@@ -98,6 +98,22 @@ Ruta: /admin/channels
             </div>
           </template>
 
+          <!-- Webhook column -->
+          <template #[`item.webhook`]="{ item }">
+            <div class="d-flex align-center gap-2">
+              <code class="text-caption text-truncate" style="max-width: 300px; display: block;">
+                {{ getWebhookUrl(item) }}
+              </code>
+              <v-btn
+                icon="mdi-content-copy"
+                variant="text"
+                size="x-small"
+                color="primary"
+                @click="copyWebhookToClipboard(item)"
+              />
+            </div>
+          </template>
+
           <!-- Status column -->
           <template #[`item.status`]="{ item }">
             <v-chip
@@ -180,6 +196,7 @@ import type { ChannelResponse } from '@/types/channels'
 import CreateChannelModal from '@/components/admin/CreateChannelModal.vue'
 import EditChannelModal from '@/components/admin/EditChannelModal.vue'
 import DeleteChannelDialog from '@/components/admin/DeleteChannelDialog.vue'
+import { config } from '@/config'
 
 // State
 const channels = ref<ChannelResponse[]>([])
@@ -203,6 +220,7 @@ const snackbarColor = ref<'success' | 'error'>('success')
 const tableHeaders = [
   { title: 'Nombre', key: 'name', sortable: true },
   { title: 'Plataforma', key: 'platform', sortable: true },
+  { title: 'Webhook', key: 'webhook', sortable: false },
   { title: 'Estado', key: 'status', sortable: false },
   { title: 'Acciones', key: 'actions', sortable: false, align: 'center' as const }
 ]
@@ -308,6 +326,23 @@ const getPlatformName = (platform: PlatformType) => {
   }
 }
 
+
+const getWebhookUrl = (channel: ChannelResponse): string => {
+  const baseUrl = config.apiBaseUrl.replace('/api', '')
+  const platformLower = channel.platform.toLowerCase()
+  return `${baseUrl}/api/webhooks/inbound/${platformLower}/${channel.id}`
+}
+
+const copyWebhookToClipboard = async (channel: ChannelResponse) => {
+  const webhookUrl = getWebhookUrl(channel)
+  try {
+    await navigator.clipboard.writeText(webhookUrl)
+    showNotification('Webhook copiado al portapapeles')
+  } catch (err) {
+    console.error('Error copying to clipboard:', err)
+    showNotification('Error al copiar webhook', 'error')
+  }
+}
 
 const showNotification = (message: string, color: 'success' | 'error' = 'success') => {
   snackbarMessage.value = message
