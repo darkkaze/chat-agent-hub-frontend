@@ -330,7 +330,7 @@ const getPlatformName = (platform: PlatformType) => {
 const getWebhookUrl = (channel: ChannelResponse): string => {
   const baseUrl = config.apiBaseUrl.replace('/api', '')
   const platformLower = channel.platform.toLowerCase()
-  return `${baseUrl}/api/webhooks/inbound/${platformLower}/${channel.id}`
+  return `${baseUrl}/api/inbound/${platformLower}/${channel.id}`
 }
 
 const copyWebhookToClipboard = async (channel: ChannelResponse) => {

@@ -166,7 +166,7 @@ const channelPlatform = ref('')
 const webhookUrl = computed(() => {
   if (!channelId.value) return ''
   const baseUrl = config.apiBaseUrl.replace('//', '//').replace(':8000', ':8000') // Keep current API URL
-  return `${baseUrl}/webhooks/inbound/${channelPlatform.value.toLowerCase()}/${channelId.value}`
+  return `${baseUrl}/inbound/${channelPlatform.value.toLowerCase()}/${channelId.value}`
 })
 
 // Platform label mapping

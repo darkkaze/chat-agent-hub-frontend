@@ -29,7 +29,7 @@ export interface ChannelResponse extends BaseEntity {
   platform: PlatformType
   api_to_send_message?: string
   credentials_to_send_message?: Record<string, any>
-  webhook_url?: string // Computed on frontend: /api/webhooks/inbound/{platform}/{id}
+  webhook_url?: string // Computed on frontend: /api/inbound/{platform}/{id}
 }
 
 // Chat Types
