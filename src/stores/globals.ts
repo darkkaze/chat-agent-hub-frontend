@@ -27,7 +27,8 @@ export const useGlobalsStore = defineStore('globals', () => {
     if (isLoaded.value) return
 
     try {
-      const response = await apiService.get<GlobalsConfig>('/api/globals')
+      // Note: apiService.baseURL already includes '/api', so use '/globals' directly
+      const response = await apiService.get<GlobalsConfig>('/globals')
       projectName.value = response.frontend_project_name || 'Agent Hub'
       isLoaded.value = true
 
