@@ -16,14 +16,8 @@ watch(
   }
 )
 
-// Load globals configuration when app mounts (after DOM is ready)
-onMounted(async () => {
-  // Load global configuration
-  if (!globalsStore.isLoaded) {
-    await globalsStore.loadGlobals()
-  }
-
-  // Set initial title
+// Set initial title when app mounts
+onMounted(() => {
   document.title = globalsStore.browserTitle
 })
 </script>
