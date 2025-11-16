@@ -8,6 +8,13 @@ const globalsStore = useGlobalsStore()
 
 const isLoadingAuth = computed(() => authStore.isLoading && !authStore.isInitialized)
 
+// Load globals configuration in setup, before components render
+if (!globalsStore.isLoaded) {
+  globalsStore.loadGlobals().catch((error) => {
+    console.error('Failed to load globals in setup:', error)
+  })
+}
+
 // Watch for changes in project name and update browser title
 watch(
   () => globalsStore.projectName,

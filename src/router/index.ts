@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { authService } from '@/services/auth/authService'
 import { useAuthStore } from '@/stores/auth'
-import { useGlobalsStore } from '@/stores/globals'
 
 // Cache for hasUsers result to prevent infinite loops
 let hasUsersCache: { result: boolean; timestamp: number } | null = null
@@ -161,7 +160,6 @@ const router = createRouter({
 // Authentication guard
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
-  const globalsStore = useGlobalsStore()
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
   const isAuthRoute = to.path.startsWith('/auth')
   const isSignupRoute = to.path === '/auth/signup'
@@ -170,11 +168,6 @@ router.beforeEach(async (to, from, next) => {
   // Inicializar autenticación en la primera navegación
   if (!authStore.isInitialized) {
     await authStore.initializeAuth()
-  }
-
-  // Load globals configuration on first navigation
-  if (!globalsStore.isLoaded) {
-    await globalsStore.loadGlobals()
   }
   
   try {
