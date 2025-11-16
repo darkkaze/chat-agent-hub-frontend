@@ -6,6 +6,7 @@
  */
 
 const MODE = import.meta.env.MODE || 'localhost'
+console.log('CONFIG MODE:', MODE)
 
 const configs = {
   localhost: {
@@ -41,6 +42,7 @@ const configs = {
 }
 
 export const config = configs[MODE as keyof typeof configs] || configs.localhost
+console.log('CONFIG apiBaseUrl:', config.apiBaseUrl)
 
 /**
  * Convierte un timestamp UTC a la timezone configurada
