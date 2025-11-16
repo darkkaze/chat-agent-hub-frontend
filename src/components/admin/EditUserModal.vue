@@ -167,15 +167,14 @@ const error = ref('')
 const formData = reactive<UpdateUserRequest & { is_active: boolean }>({
   username: '',
   email: '',
-  role: UserRole.USER,
+  role: UserRole.MEMBER,
   is_active: true
 })
 
 // Role options
 const roleOptions = [
-  { title: 'Usuario', value: UserRole.USER },
-  { title: 'Administrador', value: UserRole.ADMIN },
-  { title: 'Agente', value: UserRole.AGENT }
+  { title: 'Miembro', value: UserRole.MEMBER },
+  { title: 'Administrador', value: UserRole.ADMIN }
 ]
 
 // Validation rules

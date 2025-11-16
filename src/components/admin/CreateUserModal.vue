@@ -161,14 +161,13 @@ const formData = reactive<CreateUserRequest>({
   username: '',
   email: '',
   password: '',
-  role: UserRole.USER
+  role: UserRole.MEMBER
 })
 
 // Role options
 const roleOptions = [
-  { title: 'Usuario', value: UserRole.USER },
-  { title: 'Administrador', value: UserRole.ADMIN },
-  { title: 'Agente', value: UserRole.AGENT }
+  { title: 'Miembro', value: UserRole.MEMBER },
+  { title: 'Administrador', value: UserRole.ADMIN }
 ]
 
 // Validation rules
@@ -197,7 +196,7 @@ const resetForm = () => {
   formData.username = ''
   formData.email = ''
   formData.password = ''
-  formData.role = UserRole.USER
+  formData.role = UserRole.MEMBER
   error.value = ''
   showPassword.value = false
 

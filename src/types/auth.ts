@@ -101,9 +101,8 @@ export interface AuthState {
 }
 
 export enum UserRole {
-  ADMIN = 'admin',
-  USER = 'user',
-  AGENT = 'agent'
+  ADMIN = 'ADMIN',
+  MEMBER = 'MEMBER'
 }
 
 // Has Users Response

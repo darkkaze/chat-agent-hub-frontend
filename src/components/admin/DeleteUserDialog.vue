@@ -157,10 +157,8 @@ const getRoleName = (role: string) => {
   switch (role) {
     case UserRole.ADMIN:
       return 'Administrador'
-    case UserRole.USER:
-      return 'Usuario'
-    case UserRole.AGENT:
-      return 'Agente'
+    case UserRole.MEMBER:
+      return 'Miembro'
     default:
       return role
   }
@@ -170,10 +168,8 @@ const getRoleColor = (role: string) => {
   switch (role) {
     case UserRole.ADMIN:
       return 'error'
-    case UserRole.USER:
+    case UserRole.MEMBER:
       return 'primary'
-    case UserRole.AGENT:
-      return 'info'
     default:
       return 'default'
   }
