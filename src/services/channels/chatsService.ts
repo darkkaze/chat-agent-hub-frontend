@@ -32,7 +32,7 @@ export class ChatsService {
   }
 
   async getChat(channelId: string, chatId: string): Promise<ChatResponse> {
-    return apiService.get<ChatResponse>(`/channels/${channelId}/chats/${chatId}/`)
+    return apiService.get<ChatResponse>(`/channels/${channelId}/chats/${chatId}`)
   }
 
   async assignChat(
@@ -41,7 +41,7 @@ export class ChatsService {
     assignData: AssignChatRequest
   ): Promise<ChatResponse> {
     return apiService.post<ChatResponse>(
-      `/channels/${channelId}/chats/${chatId}/assign/`,
+      `/channels/${channelId}/chats/${chatId}/assign`,
       assignData
     )
   }

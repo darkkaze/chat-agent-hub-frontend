@@ -36,7 +36,7 @@ export class MessagesService {
     messageData: SendMessageRequest
   ): Promise<MessageResponse> {
     return apiService.post<MessageResponse>(
-      `/channels/${channelId}/chats/${chatId}/messages/`,
+      `/channels/${channelId}/chats/${chatId}/messages`,
       messageData
     )
   }

@@ -24,27 +24,27 @@ import type { ApiMessageResponse } from '@/types/api'
 
 export class ChannelsService {
   async getChannels(): Promise<ChannelResponse[]> {
-    return apiService.get<ChannelResponse[]>('/channels/')
+    return apiService.get<ChannelResponse[]>('/channels')
   }
 
   async getPlatforms(): Promise<string[]> {
-    return apiService.get<string[]>('/channels/platforms/')
+    return apiService.get<string[]>('/channels/platforms')
   }
 
   async createChannel(channelData: CreateChannelRequest): Promise<ChannelResponse> {
-    return apiService.post<ChannelResponse>('/channels/', channelData)
+    return apiService.post<ChannelResponse>('/channels', channelData)
   }
 
   async getChannel(channelId: string): Promise<ChannelResponse> {
-    return apiService.get<ChannelResponse>(`/channels/${channelId}/`)
+    return apiService.get<ChannelResponse>(`/channels/${channelId}`)
   }
 
   async updateChannel(channelId: string, channelData: UpdateChannelRequest): Promise<ChannelResponse> {
-    return apiService.put<ChannelResponse>(`/channels/${channelId}/`, channelData)
+    return apiService.put<ChannelResponse>(`/channels/${channelId}`, channelData)
   }
 
   async deleteChannel(channelId: string): Promise<ApiMessageResponse> {
-    return apiService.delete<ApiMessageResponse>(`/channels/${channelId}/`)
+    return apiService.delete<ApiMessageResponse>(`/channels/${channelId}`)
   }
 
   async getChannelCredentials(channelId: string): Promise<{
@@ -56,7 +56,7 @@ export class ChannelsService {
       channel_id: string
       channel_name: string
       credentials_to_send_message: Record<string, any>
-    }>(`/channels/${channelId}/credentials/`)
+    }>(`/channels/${channelId}/credentials`)
   }
 }
 

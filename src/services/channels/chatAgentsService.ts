@@ -38,7 +38,7 @@ export class ChatAgentsService {
     agentId: string
   ): Promise<ChatAgentResponse> {
     return apiService.get<ChatAgentResponse>(
-      `/channels/${channelId}/chats/${chatId}/agents/${agentId}/`
+      `/channels/${channelId}/chats/${chatId}/agents/${agentId}`
     )
   }
 
@@ -49,7 +49,7 @@ export class ChatAgentsService {
     updateData: UpdateChatAgentRequest
   ): Promise<ChatAgentResponse> {
     return apiService.put<ChatAgentResponse>(
-      `/channels/${channelId}/chats/${chatId}/agents/${agentId}/`,
+      `/channels/${channelId}/chats/${chatId}/agents/${agentId}`,
       updateData
     )
   }

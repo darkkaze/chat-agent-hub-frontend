@@ -38,12 +38,12 @@ import type { ApiMessageResponse } from '@/types/api'
 export class AuthService {
   // System check
   async hasUsers(): Promise<HasUsersResponse> {
-    return apiService.get<HasUsersResponse>('/auth/has-users/')
+    return apiService.get<HasUsersResponse>('/auth/has-users')
   }
 
   // Authentication
   async login(credentials: LoginRequest): Promise<LoginResponse> {
-    const response = await apiService.post<LoginResponse>('/auth/token/', credentials)
+    const response = await apiService.post<LoginResponse>('/auth/token', credentials)
 
     // Guardar token automáticamente
     apiService.setToken(response.access_token)
@@ -52,7 +52,7 @@ export class AuthService {
   }
 
   async signup(userData: SignupRequest): Promise<SignupResponse> {
-    const response = await apiService.post<SignupResponse>('/auth/signup/', userData)
+    const response = await apiService.post<SignupResponse>('/auth/signup', userData)
 
     // Guardar token automáticamente
     apiService.setToken(response.access_token)
@@ -71,15 +71,15 @@ export class AuthService {
   }
 
   async createUser(userData: CreateUserRequest): Promise<UserResponse> {
-    return apiService.post<UserResponse>('/auth/users/', userData)
+    return apiService.post<UserResponse>('/auth/users', userData)
   }
 
   async getUser(userId: string): Promise<UserResponse> {
-    return apiService.get<UserResponse>(`/auth/users/${userId}/`)
+    return apiService.get<UserResponse>(`/auth/users/${userId}`)
   }
 
   async updateUser(userId: string, userData: UpdateUserRequest): Promise<UserResponse> {
-    return apiService.put<UserResponse>(`/auth/users/${userId}/`, userData)
+    return apiService.put<UserResponse>(`/auth/users/${userId}`, userData)
   }
 
   async deleteUser(userId: string, hard = false): Promise<ApiMessageResponse> {
@@ -94,11 +94,11 @@ export class AuthService {
   }
 
   async createAgent(agentData: CreateAgentRequest): Promise<AgentResponse> {
-    return apiService.post<AgentResponse>('/auth/agents/', agentData)
+    return apiService.post<AgentResponse>('/auth/agents', agentData)
   }
 
   async updateAgent(agentId: string, agentData: UpdateAgentRequest): Promise<AgentResponse> {
-    return apiService.put<AgentResponse>(`/auth/agents/${agentId}/`, agentData)
+    return apiService.put<AgentResponse>(`/auth/agents/${agentId}`, agentData)
   }
 
   async deleteAgent(agentId: string, hard = false): Promise<ApiMessageResponse> {

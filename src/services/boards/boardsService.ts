@@ -21,15 +21,15 @@ import type { ApiMessageResponse } from '@/types/api'
 
 export class BoardsService {
   async getBoards(): Promise<BoardResponse[]> {
-    return apiService.get<BoardResponse[]>('/boards/')
+    return apiService.get<BoardResponse[]>('/boards')
   }
 
   async createBoard(boardData: CreateBoardRequest): Promise<BoardResponse> {
-    return apiService.post<BoardResponse>('/boards/', boardData)
+    return apiService.post<BoardResponse>('/boards', boardData)
   }
 
   async getBoard(boardId: string): Promise<BoardResponse> {
-    return apiService.get<BoardResponse>(`/boards/${boardId}/`)
+    return apiService.get<BoardResponse>(`/boards/${boardId}`)
   }
 
   async deleteBoard(boardId: string, hard = false): Promise<ApiMessageResponse> {
