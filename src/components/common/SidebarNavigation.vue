@@ -259,6 +259,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMenuStore } from '@/stores/menu'
 import { useAuthStore } from '@/stores/auth'
+import { useGlobalsStore } from '@/stores/globals'
 
 // Types
 interface Channel {
@@ -280,7 +281,6 @@ const router = useRouter()
 // Stores
 const menuStore = useMenuStore()
 const authStore = useAuthStore()
-const { useGlobalsStore } = await import('@/stores/globals')
 const globalsStore = useGlobalsStore()
 
 // Reactive screen width
