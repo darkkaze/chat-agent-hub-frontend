@@ -57,7 +57,7 @@ Emits: ninguno por ahora
           </template>
           <template v-else>
             <v-avatar size="32" color="primary">
-              <span class="text-white font-weight-bold">D</span>
+              <span class="text-white font-weight-bold">{{ globalsStore.sidebarTitle.charAt(0).toUpperCase() }}</span>
             </v-avatar>
           </template>
         </v-list-item>
