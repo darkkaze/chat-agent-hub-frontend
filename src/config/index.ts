@@ -29,11 +29,9 @@ const configs = {
     timezone: 'America/Mexico_City', // GMT-6
   },
   production: {
-    get apiBaseUrl() {
-      return `${location.protocol}//${location.host}/api`
-    },
+    apiBaseUrl: `https://${location.host}/api`,
     get websocketUrl() {
-      return `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/api/ws`
+      return `wss://${location.host}/api/ws`
     },
     debug: false,
     environment: 'production',

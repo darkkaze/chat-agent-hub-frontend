@@ -34,17 +34,19 @@ export const useGlobalsStore = defineStore('globals', () => {
       const response = await apiService.get<GlobalsConfig>('/globals')
       console.log('API response received:', response)
       projectName.value = response.frontend_project_name || 'Agent Hub'
-      isLoaded.value = true
 
       // Update document title immediately
       document.title = browserTitle.value
 
       console.log('Globals loaded:', { projectName: projectName.value })
+
+      // Only mark as loaded if the call was successful
+      isLoaded.value = true
     } catch (error) {
       console.error('Failed to load globals:', error)
-      // Use default value and mark as loaded to not block the app
+      // Use default value but DON'T mark as loaded so it retries
       projectName.value = 'Agent Hub'
-      isLoaded.value = true
+      // isLoaded remains false, so it will retry on next call
     }
     console.log('loadGlobals finished')
   }
