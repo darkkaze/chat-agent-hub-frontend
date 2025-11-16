@@ -51,7 +51,7 @@ export class TasksService {
 
   async deleteTask(taskId: string, soft = false): Promise<Record<string, any>> {
     const queryParams = buildQueryParams({ soft })
-    return apiService.delete<Record<string, any>>(`/tasks/${taskId}/${queryParams}`)
+    return apiService.delete<Record<string, any>>(`/tasks/${taskId}${queryParams}`)
   }
 
   // Task Notes

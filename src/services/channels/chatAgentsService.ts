@@ -28,7 +28,7 @@ export class ChatAgentsService {
   ): Promise<ChatAgentsListResponse> {
     const queryParams = filters ? buildQueryParams(filters) : ''
     return apiService.get<ChatAgentsListResponse>(
-      `/channels/${channelId}/chats/${chatId}/agents/${queryParams}`
+      `/channels/${channelId}/chats/${chatId}/agents${queryParams}`
     )
   }
 

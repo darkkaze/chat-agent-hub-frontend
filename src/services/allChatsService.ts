@@ -30,7 +30,7 @@ export class AllChatsService {
    */
   async getAllChats(filters?: UnifiedChatsFiltersParams): Promise<UnifiedChatsListResponse> {
     const queryParams = filters ? buildQueryParams(filters) : ''
-    return apiService.get<UnifiedChatsListResponse>(`/chats/${queryParams}`)
+    return apiService.get<UnifiedChatsListResponse>(`/chats${queryParams}`)
   }
 
   /**

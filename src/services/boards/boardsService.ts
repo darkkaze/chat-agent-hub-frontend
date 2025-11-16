@@ -34,7 +34,7 @@ export class BoardsService {
 
   async deleteBoard(boardId: string, hard = false): Promise<ApiMessageResponse> {
     const queryParams = buildQueryParams({ hard })
-    return apiService.delete<ApiMessageResponse>(`/boards/${boardId}/${queryParams}`)
+    return apiService.delete<ApiMessageResponse>(`/boards/${boardId}${queryParams}`)
   }
 }
 

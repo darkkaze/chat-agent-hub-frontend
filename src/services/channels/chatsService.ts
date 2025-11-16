@@ -28,7 +28,7 @@ export class ChatsService {
     filters?: ChatFiltersParams
   ): Promise<ChatListResponse> {
     const queryParams = filters ? buildQueryParams(filters) : ''
-    return apiService.get<ChatListResponse>(`/channels/${channelId}/chats/${queryParams}`)
+    return apiService.get<ChatListResponse>(`/channels/${channelId}/chats${queryParams}`)
   }
 
   async getChat(channelId: string, chatId: string): Promise<ChatResponse> {
