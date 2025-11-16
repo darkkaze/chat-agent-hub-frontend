@@ -28,7 +28,7 @@ export class ChatAgentsService {
   ): Promise<ChatAgentsListResponse> {
     const queryParams = filters ? buildQueryParams(filters) : ''
     return apiService.get<ChatAgentsListResponse>(
-      `/channels/${channelId}/chats/${chatId}/agents${queryParams}`
+      `/channels/${channelId}/chats/${chatId}/agents/${queryParams}`
     )
   }
 
@@ -38,7 +38,7 @@ export class ChatAgentsService {
     agentId: string
   ): Promise<ChatAgentResponse> {
     return apiService.get<ChatAgentResponse>(
-      `/channels/${channelId}/chats/${chatId}/agents/${agentId}`
+      `/channels/${channelId}/chats/${chatId}/agents/${agentId}/`
     )
   }
 
@@ -49,7 +49,7 @@ export class ChatAgentsService {
     updateData: UpdateChatAgentRequest
   ): Promise<ChatAgentResponse> {
     return apiService.put<ChatAgentResponse>(
-      `/channels/${channelId}/chats/${chatId}/agents/${agentId}`,
+      `/channels/${channelId}/chats/${chatId}/agents/${agentId}/`,
       updateData
     )
   }

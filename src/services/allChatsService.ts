@@ -30,7 +30,7 @@ export class AllChatsService {
    */
   async getAllChats(filters?: UnifiedChatsFiltersParams): Promise<UnifiedChatsListResponse> {
     const queryParams = filters ? buildQueryParams(filters) : ''
-    return apiService.get<UnifiedChatsListResponse>(`/chats${queryParams}`)
+    return apiService.get<UnifiedChatsListResponse>(`/chats/${queryParams}`)
   }
 
   /**
@@ -40,7 +40,7 @@ export class AllChatsService {
   async getChannelOptions(): Promise<ChannelOption[]> {
     try {
       // Using existing channels service to get available channels
-      const channels = await apiService.get<ChannelResponse[]>('/channels')
+      const channels = await apiService.get<ChannelResponse[]>('/channels/')
 
       return channels.map(channel => ({
         id: channel.id,

@@ -24,36 +24,36 @@ import type {
 
 export class ChatsService {
   async getChannelChats(
-    channelId: string, 
+    channelId: string,
     filters?: ChatFiltersParams
   ): Promise<ChatListResponse> {
     const queryParams = filters ? buildQueryParams(filters) : ''
-    return apiService.get<ChatListResponse>(`/channels/${channelId}/chats${queryParams}`)
+    return apiService.get<ChatListResponse>(`/channels/${channelId}/chats/${queryParams}`)
   }
 
   async getChat(channelId: string, chatId: string): Promise<ChatResponse> {
-    return apiService.get<ChatResponse>(`/channels/${channelId}/chats/${chatId}`)
+    return apiService.get<ChatResponse>(`/channels/${channelId}/chats/${chatId}/`)
   }
 
   async assignChat(
-    channelId: string, 
-    chatId: string, 
+    channelId: string,
+    chatId: string,
     assignData: AssignChatRequest
   ): Promise<ChatResponse> {
     return apiService.post<ChatResponse>(
-      `/channels/${channelId}/chats/${chatId}/assign`, 
+      `/channels/${channelId}/chats/${chatId}/assign/`,
       assignData
     )
   }
 
   async deleteChat(
-    channelId: string, 
-    chatId: string, 
+    channelId: string,
+    chatId: string,
     soft = false
   ): Promise<Record<string, any>> {
     const queryParams = buildQueryParams({ soft })
     return apiService.delete<Record<string, any>>(
-      `/channels/${channelId}/chats/${chatId}${queryParams}`
+      `/channels/${channelId}/chats/${chatId}/${queryParams}`
     )
   }
 }

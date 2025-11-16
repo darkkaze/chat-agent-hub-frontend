@@ -21,15 +21,15 @@ import type { ApiMessageResponse } from '@/types/api'
 
 export class AgentTokensService {
   async getAgentTokens(agentId: string): Promise<AgentTokensListResponse> {
-    return apiService.get<AgentTokensListResponse>(`/auth/agents/${agentId}/tokens`)
+    return apiService.get<AgentTokensListResponse>(`/auth/agents/${agentId}/tokens/`)
   }
 
   async createAgentToken(agentId: string): Promise<CreateAgentTokenResponse> {
-    return apiService.post<CreateAgentTokenResponse>(`/auth/agents/${agentId}/tokens`, {})
+    return apiService.post<CreateAgentTokenResponse>(`/auth/agents/${agentId}/tokens/`, {})
   }
 
   async revokeAgentToken(agentId: string, tokenId: string): Promise<ApiMessageResponse> {
-    return apiService.delete<ApiMessageResponse>(`/auth/agents/${agentId}/tokens/${tokenId}`)
+    return apiService.delete<ApiMessageResponse>(`/auth/agents/${agentId}/tokens/${tokenId}/`)
   }
 }
 

@@ -26,7 +26,7 @@ export class MessagesService {
   ): Promise<ChatMessagesResponse> {
     const queryParams = filters ? buildQueryParams(filters) : ''
     return apiService.get<ChatMessagesResponse>(
-      `/channels/${channelId}/chats/${chatId}/messages${queryParams}`
+      `/channels/${channelId}/chats/${chatId}/messages/${queryParams}`
     )
   }
 
@@ -36,7 +36,7 @@ export class MessagesService {
     messageData: SendMessageRequest
   ): Promise<MessageResponse> {
     return apiService.post<MessageResponse>(
-      `/channels/${channelId}/chats/${chatId}/messages`,
+      `/channels/${channelId}/chats/${chatId}/messages/`,
       messageData
     )
   }

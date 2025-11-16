@@ -34,48 +34,48 @@ import type {
 export class TasksService {
   // Tasks CRUD
   async getTasks(): Promise<TaskResponse[]> {
-    return apiService.get<TaskResponse[]>('/tasks')
+    return apiService.get<TaskResponse[]>('/tasks/')
   }
 
   async createTask(taskData: CreateTaskRequest): Promise<TaskResponse> {
-    return apiService.post<TaskResponse>('/tasks', taskData)
+    return apiService.post<TaskResponse>('/tasks/', taskData)
   }
 
   async getTask(taskId: string): Promise<TaskDetailResponse> {
-    return apiService.get<TaskDetailResponse>(`/tasks/${taskId}`)
+    return apiService.get<TaskDetailResponse>(`/tasks/${taskId}/`)
   }
 
   async updateTask(taskId: string, taskData: UpdateTaskRequest): Promise<TaskResponse> {
-    return apiService.put<TaskResponse>(`/tasks/${taskId}`, taskData)
+    return apiService.put<TaskResponse>(`/tasks/${taskId}/`, taskData)
   }
 
   async deleteTask(taskId: string, soft = false): Promise<Record<string, any>> {
     const queryParams = buildQueryParams({ soft })
-    return apiService.delete<Record<string, any>>(`/tasks/${taskId}${queryParams}`)
+    return apiService.delete<Record<string, any>>(`/tasks/${taskId}/${queryParams}`)
   }
 
   // Task Notes
   async addTaskNote(taskId: string, noteData: CreateTaskNoteRequest): Promise<NoteResponse> {
-    return apiService.post<NoteResponse>(`/tasks/${taskId}/notes`, noteData)
+    return apiService.post<NoteResponse>(`/tasks/${taskId}/notes/`, noteData)
   }
 
   async deleteTaskNote(taskId: string, noteId: string): Promise<Record<string, any>> {
-    return apiService.delete<Record<string, any>>(`/tasks/${taskId}/notes/${noteId}`)
+    return apiService.delete<Record<string, any>>(`/tasks/${taskId}/notes/${noteId}/`)
   }
 
   // Task Documents
   async addTaskDocument(
-    taskId: string, 
+    taskId: string,
     documentData: CreateTaskDocumentRequest
   ): Promise<DocumentResponse> {
-    return apiService.post<DocumentResponse>(`/tasks/${taskId}/documents`, documentData)
+    return apiService.post<DocumentResponse>(`/tasks/${taskId}/documents/`, documentData)
   }
 
   async deleteTaskDocument(
-    taskId: string, 
+    taskId: string,
     documentId: string
   ): Promise<Record<string, any>> {
-    return apiService.delete<Record<string, any>>(`/tasks/${taskId}/documents/${documentId}`)
+    return apiService.delete<Record<string, any>>(`/tasks/${taskId}/documents/${documentId}/`)
   }
 }
 
