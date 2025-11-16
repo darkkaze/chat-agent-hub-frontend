@@ -24,11 +24,15 @@ export const useGlobalsStore = defineStore('globals', () => {
 
   // Actions
   const loadGlobals = async () => {
+    console.log('loadGlobals called, isLoaded:', isLoaded.value)
     if (isLoaded.value) return
 
+    console.log('Starting to fetch globals...')
     try {
       // Note: apiService.baseURL already includes '/api', so use '/globals' directly
+      console.log('Making API call to /globals')
       const response = await apiService.get<GlobalsConfig>('/globals')
+      console.log('API response received:', response)
       projectName.value = response.frontend_project_name || 'Agent Hub'
       isLoaded.value = true
 
@@ -42,6 +46,7 @@ export const useGlobalsStore = defineStore('globals', () => {
       projectName.value = 'Agent Hub'
       isLoaded.value = true
     }
+    console.log('loadGlobals finished')
   }
 
   return {
