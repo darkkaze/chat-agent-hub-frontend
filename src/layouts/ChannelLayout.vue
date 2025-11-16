@@ -37,7 +37,7 @@ Emits: ninguno
                 mdi-chat-outline
               </v-icon>
               <h2 class="text-h5 text-on-surface-variant text-center mb-4">
-                ¡Bienvenido a Agent Hub!
+                ¡Bienvenido a {{ globalsStore.sidebarTitle }}!
               </h2>
               <p class="text-body-1 text-on-surface-variant text-center mb-6" style="max-width: 400px;">
                 Selecciona una conversación de la lista para comenzar a chatear con tus clientes,
@@ -62,11 +62,13 @@ Emits: ninguno
 
 <script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router'
+import { useGlobalsStore } from '@/stores/globals'
 import SidebarNavigation from '@/components/common/SidebarNavigation.vue'
 import ChannelView from '@/views/ChannelView.vue'
 
 const route = useRoute()
 const router = useRouter()
+const globalsStore = useGlobalsStore()
 
 
 const refreshChats = () => {

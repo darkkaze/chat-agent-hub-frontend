@@ -28,7 +28,7 @@ Emits: ninguno por ahora
       color="on-surface"
     />
     <v-app-bar-title class="text-on-surface font-weight-bold">
-      Demo
+      {{ globalsStore.sidebarTitle }}
     </v-app-bar-title>
   </v-app-bar>
 
@@ -52,7 +52,7 @@ Emits: ninguno por ahora
         >
           <template v-if="!isCompact">
             <v-list-item-title class="text-h6 text-on-surface font-weight-bold">
-              Demo
+              {{ globalsStore.sidebarTitle }}
             </v-list-item-title>
           </template>
           <template v-else>
@@ -67,7 +67,7 @@ Emits: ninguno por ahora
       <div v-else class="px-4 py-3">
         <v-list-item>
           <v-list-item-title class="text-h6 text-on-surface font-weight-bold">
-            Demo
+            {{ globalsStore.sidebarTitle }}
           </v-list-item-title>
         </v-list-item>
       </div>
@@ -280,6 +280,8 @@ const router = useRouter()
 // Stores
 const menuStore = useMenuStore()
 const authStore = useAuthStore()
+const { useGlobalsStore } = await import('@/stores/globals')
+const globalsStore = useGlobalsStore()
 
 // Reactive screen width
 const screenWidth = ref(window.innerWidth)

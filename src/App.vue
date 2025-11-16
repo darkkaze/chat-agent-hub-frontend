@@ -1,9 +1,25 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useGlobalsStore } from '@/stores/globals'
 
 const authStore = useAuthStore()
+const globalsStore = useGlobalsStore()
+
 const isLoadingAuth = computed(() => authStore.isLoading && !authStore.isInitialized)
+
+// Watch for changes in project name and update browser title
+watch(
+  () => globalsStore.projectName,
+  (newProjectName) => {
+    document.title = `${newProjectName} | Agent Hub`
+  }
+)
+
+// Set initial title on mount
+onMounted(() => {
+  document.title = globalsStore.browserTitle
+})
 </script>
 
 <template>

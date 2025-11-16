@@ -21,7 +21,7 @@ Primera vista del onboarding después del signup
               <v-icon size="40" color="white">mdi-check-circle</v-icon>
             </v-avatar>
             <h1 class="text-h4 text-on-surface font-weight-bold mb-2">
-              ¡Bienvenido a Agent Hub!
+              ¡Bienvenido a {{ globalsStore.sidebarTitle }}!
             </h1>
             <p class="text-body-1 text-on-surface-variant">
               Tu cuenta ha sido creada exitosamente
@@ -31,7 +31,7 @@ Primera vista del onboarding después del signup
           <!-- Welcome Content -->
           <div class="mb-8">
             <p class="text-body-2 text-on-surface-variant mb-4">
-              Te guiaremos a través de 3 pasos esenciales para configurar tu Agent Hub 
+              Te guiaremos a través de 3 pasos esenciales para configurar {{ globalsStore.sidebarTitle }}
               y comenzar a automatizar tus conversaciones.
             </p>
             
@@ -60,9 +60,9 @@ Primera vista del onboarding después del signup
                 <div class="text-body-2">
                   <div class="mb-4">
                     <strong>¿Qué es un Canal?</strong><br>
-                    Un canal es un medio de comunicación como WhatsApp, Instagram, Telegram, etc. 
-                    Es donde recibes mensajes de tus clientes. Puedes tener múltiples canales 
-                    conectados a Agent Hub para centralizar todas tus conversaciones.
+                    Un canal es un medio de comunicación como WhatsApp, Instagram, Telegram, etc.
+                    Es donde recibes mensajes de tus clientes. Puedes tener múltiples canales
+                    conectados a {{ globalsStore.sidebarTitle }} para centralizar todas tus conversaciones.
                   </div>
                   <div class="mb-4">
                     <strong>¿Qué es un Agente?</strong><br>
@@ -99,8 +99,10 @@ Primera vista del onboarding después del signup
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
+import { useGlobalsStore } from '@/stores/globals'
 
 const router = useRouter()
+const globalsStore = useGlobalsStore()
 
 const continueOnboarding = () => {
   // Navegar al siguiente paso: crear canal
